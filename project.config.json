@@ -1,0 +1,13 @@
+{
+  "description": "A WePY project",
+  "setting": {
+    "urlCheck": true,
+    "es6": false,
+    "postcss": false,
+    "minified": false
+  },
+  "compileType": "miniprogram",
+  "appid": "wx0653ba0a3274d3b9",
+  "projectname": "mini-gujia",
+  "miniprogramRoot": "./dist"
+}

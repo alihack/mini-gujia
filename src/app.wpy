@@ -1,0 +1,69 @@
+<style lang="less">
+page {
+	width: 100%;
+	height: 100%;
+	font-size: 16px;
+}
+.container {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	box-sizing: border-box;
+}
+</style>
+
+<script>
+import wepy from 'wepy'
+import 'wepy-async-function'
+
+export default class extends wepy.app {
+  config = {
+    pages: [
+      'pages/index'
+    ],
+    window: {
+      backgroundTextStyle: 'light',
+      navigationBarBackgroundColor: '#fff',
+      navigationBarTitleText: 'WeChat',
+      navigationBarTextStyle: 'black'
+    }
+  }
+
+  globalData = {
+    myUserInfo: null
+  }
+  async onShow() {
+    wepy.clearStorage()  // 清除缓存
+  }
+
+  constructor() {
+    super()
+    this.use('requestfix')
+    this.use('promisify')
+    this.intercept('request', {
+      config (req) { // 这里不能用异步函数
+// 上传数据自动加入session
+        if (req.url !== 'sessions') { // 请求session的请求除外
+          const session = wepy.getStorageSync('session')
+          if (!session) {}
+          if (!req.data) req.data = {}
+          if (session) req.data.session = session
+        }
+        console.log('请求开始', req.data)
+        return req
+      },
+      success (res) {
+        console.log('请求完成', res.data.data)
+        return res.data
+      }
+    })
+
+// 省得每次跳转都要打'/pages/'
+    function config (req) { req.url = '/pages/' + req.url; return req }
+    this.intercept('navigateTo', {config})
+    this.intercept('redirectTo', {config})
+    this.intercept('switchTab', {config})
+  }
+}
+</script>

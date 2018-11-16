@@ -1,11 +1,12 @@
 <style lang="less">
 .container {
-	background: #f5f5f5;
+	height: 100%;
 	.location {
 		margin-top:20rpx;
 	}
 	.title {
 		margin-top:60rpx;
+		margin-bottom: 50rpx;
 		font-size: 23px;
 		font-family: bold;
 	}
@@ -26,51 +27,93 @@
 			border:none;
 		}
 	}
-	.button {
-		margin-top:50rpx;
-		width: 690rpx;
-		height: 90rpx;
-		background: #91c7ff;
-		line-height: 90rpx;
-		color:#fff;
-		font-size: 18px;
-		text-align: center;
-	}
 	.tips {
-		margin-top:25rpx;
-		font-size: 12px;
-		color:#cecece;
+		display: flex;
+		width: 690rpx;
+		justify-content: space-between;
+		margin-top:30rpx;
+		margin-bottom: 10rpx;
+		font-size: 13px;
+		color:#666666;
+		.border {
+			width: 240rpx;
+			height: 18rpx;
+			border-bottom: 1px solid #e5e5e5;
+		}
+	}
+	.box {
+		margin-top:20rpx;
+		width: 690rpx;
+		height: 225rpx;
+		background: #fff;
+		box-sizing: border-box;
+		border-radius: 10rpx;
+		padding: 20rpx 30rpx;
+		&-head {
+			display: flex;
+			.building {
+				font-size:18px;
+				font-weight: bold;
+			}
+			.room {
+				margin:10rpx 0 0 10rpx;
+				font-size: 13px;
+				color:#888888;
+			}
+		}
+		&-main {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			color:#ff9c00;
+			height: 100rpx;
+			.price {
+				.number {
+					font-size: 40px;
+				}
+				.unit {
+					margin-top:30rpx;
+					margin-left:10rpx;
+				}
+			}
+		}
+		&-foot {
+			display: flex;
+			.text {
+				font-size: 13px;
+				color:#888888;
+			}
+		}
 	}
 }
 </style>
 <template>
 	<view class="container">
 		<view class="location">厦门</view>
-		<view class="title">算算房子值多少钱</view>
-		<view class="panel">
-			<view class="cell">
-				<view class="cell-head">小区</view>
-				<view class="cell-foot">></view>
+		<view class="title">我的房子值多少钱</view>
+		<view class="button" @tap="goEvaluate">再次估价</view>
+		<view class="tips">
+			<view class="border"></view>
+			<text>我的估价历史</text>
+			<view class="border"></view>
+		</view>
+		<view class="box">
+			<view class="box-head">
+				<view class="building">永年公园美学</view>
+				<view class="room">3室2厅2卫 145m2</view>
 			</view>
-			<view class="cell">
-				<view class="cell-head">面积</view>
-				<view class="cell-foot">></view>
+			<view class="box-main">
+				<view class="price">
+					<text class="number">114</text>
+					<text class="unit">万</text>
+				</view>
+				<view class="arrow">></view>
 			</view>
-			<view class="cell">
-				<view class="cell-head">户型</view>
-				<view class="cell-foot">></view>
-			</view>
-			<view class="cell">
-				<view class="cell-head">朝向</view>
-				<view class="cell-foot">></view>
-			</view>
-			<view class="cell">
-				<view class="cell-head">楼层</view>
-				<view class="cell-foot">></view>
+			<view class="box-foot">
+				<view class="text">环比上个月下跌1.2%</view>
+				<view class="icon"></view>
 			</view>
 		</view>
-		<view class="button">估算价值</view>
-		<view class="tips">估价结果基于海量真实房源交易数据得出</view>
 	</view>
 </template>
 
@@ -79,7 +122,7 @@ import wepy from 'wepy'
 export default class Index extends wepy.page {
 config = {
 	navigationBarTitleText: '房牛估价',
-	navigationBarBackgroundColor: '#f5f5f5'
+	navigationBarBackgroundColor: '#f5f5f5',
 }
 components = {
 }
@@ -92,6 +135,9 @@ computed = {
 onLoad() {
 }
 methods = {
+	goEvaluate () {
+		wepy.navigateTo({url: 'evaluate'})
+	}
 }
 
 events = {

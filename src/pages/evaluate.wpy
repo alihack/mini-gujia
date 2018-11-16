@@ -1,0 +1,95 @@
+<style lang="less">
+.container {
+	height: 100%;
+	.location {
+		margin-top:20rpx;
+	}
+	.title {
+		margin-top:60rpx;
+		font-size: 23px;
+		font-family: bold;
+	}
+	.panel {
+		margin-top:70rpx;
+		margin-bottom: 50rpx;
+		background: #fff;
+		width: 690rpx;
+		height: 540rpx;
+		border-radius: 10rpx;
+		box-shadow:#ebebeb 0px 0px 10px;
+		font-size: 16px;
+		.cell {
+			display:flex;
+			justify-content: space-between;
+			padding:30rpx;
+			border-top:1px solid #e5e5e5
+		}
+		.cell:first-child {
+			border:none;
+		}
+	}
+	.tips {
+		margin-top:25rpx;
+		font-size: 12px;
+		color:#cecece;
+	}
+}
+</style>
+<template>
+	<view class="container">
+		<view class="location">厦门</view>
+		<view class="title">算算房子值多少钱</view>
+		<view class="panel">
+			<view class="cell">
+				<view class="cell-head">小区</view>
+				<view class="cell-foot">></view>
+			</view>
+			<view class="cell">
+				<view class="cell-head">面积</view>
+				<view class="cell-foot">></view>
+			</view>
+			<view class="cell">
+				<view class="cell-head">户型</view>
+				<view class="cell-foot">></view>
+			</view>
+			<view class="cell">
+				<view class="cell-head">朝向</view>
+				<view class="cell-foot">></view>
+			</view>
+			<view class="cell">
+				<view class="cell-head">楼层</view>
+				<view class="cell-foot">></view>
+			</view>
+		</view>
+		<view class="button" @tap="goResult">估算价值</view>
+		<view class="tips">估价结果基于海量真实房源交易数据得出</view>
+	</view>
+</template>
+
+<script>
+import wepy from 'wepy'
+export default class Index extends wepy.page {
+config = {
+	navigationBarTitleText: '房牛估价',
+	navigationBarBackgroundColor: '#f5f5f5'
+}
+components = {
+}
+
+data = {
+}
+
+computed = {
+}
+onLoad() {
+}
+methods = {
+	goResult() {
+		wepy.navigateTo({url: 'evaluateResult'})
+	}
+}
+
+events = {
+}
+}
+</script>

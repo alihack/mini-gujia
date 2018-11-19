@@ -3,6 +3,18 @@
 	height: 100%;
 	.location {
 		margin-top:20rpx;
+		display: flex;
+		align-items: center;
+		.address {
+			width: 30rpx;
+			height: 30rpx;
+			margin-right: 10rpx;
+		}
+		.triangle {
+			width: 20rpx;
+			height: 15rpx;
+			margin-left: 10rpx;
+		}
 	}
 	.title {
 		margin-top:60rpx;
@@ -67,6 +79,10 @@
 			align-items: center;
 			color:#ff9c00;
 			height: 100rpx;
+			.arrow {
+				width:50rpx;
+				height:50rpx;
+			}
 			.price {
 				.number {
 					font-size: 40px;
@@ -79,6 +95,11 @@
 		}
 		&-foot {
 			display: flex;
+			align-items: flex-end;
+			.icon {
+				width:40rpx;
+				height: 40rpx;
+			}
 			.text {
 				font-size: 13px;
 				color:#888888;
@@ -89,7 +110,11 @@
 </style>
 <template>
 	<view class="container">
-		<view class="location">厦门</view>
+		<view class="location" @tap="chooseCity">
+			<image class="address" src="../images/address.png"/>
+			<view>厦门</view>
+			<image class="triangle" src="../images/triangle.png"/>
+		</view>
 		<view class="title">我的房子值多少钱</view>
 		<view class="button" @tap="goEvaluate">再次估价</view>
 		<view class="tips">
@@ -107,11 +132,11 @@
 					<text class="number">114</text>
 					<text class="unit">万</text>
 				</view>
-				<view class="arrow">></view>
+				<image class="arrow" src="../images/next.png"/>
 			</view>
 			<view class="box-foot">
 				<view class="text">环比上个月下跌1.2%</view>
-				<view class="icon"></view>
+				<image class="icon" src="../images/decline.png"></image>
 			</view>
 		</view>
 	</view>
@@ -119,6 +144,8 @@
 
 <script>
 import wepy from 'wepy'
+import {login, getMyInfo} from '../utils/util'
+import QQMapWX from '../utils/qqmap-wx-jssdk.js'
 export default class Index extends wepy.page {
 config = {
 	navigationBarTitleText: '房牛估价',
@@ -128,13 +155,52 @@ components = {
 }
 
 data = {
+	myCity: ''
 }
 
 computed = {
 }
-onLoad() {
+async onLoad() {
+	// await login()
+	// await getMyInfo()
+	// this.methods.getLocation()
 }
 methods = {
+	getLocation: () => {
+		return new Promise(async resolve => {
+			// 实例化API核心类
+			const qqmapsdk = new QQMapWX({
+				key: 'KUBBZ-HYIKF-II2J3-NYSEA-IY3ZQ-KTBP3'
+			})
+			wx.getLocation({
+				type: 'gcj02',
+				success: res => {
+					console.log(res)
+					qqmapsdk.reverseGeocoder({
+						location: {
+							latitude: res.latitude,
+							longitude: res.longitude
+						},
+						success: ({result: {ad_info}}) => {
+							const resCity = ad_info.city
+							this.myCity = resCity.slice(0, resCity.length - 1)
+							console.log(this.city)
+							this.$apply()
+						},
+						fail: function(res) {
+							console.log(res)
+						},
+						complete: function(res) {
+							resolve()
+						}
+					})
+				}
+			})
+		})
+	},
+	chooseCity() {
+		wepy.navigateTo({url: 'cityList'})
+	},
 	goEvaluate () {
 		wepy.navigateTo({url: 'evaluate'})
 	}

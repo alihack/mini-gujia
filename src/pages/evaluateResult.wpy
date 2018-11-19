@@ -9,8 +9,23 @@
 		background: #2d8cf0;
 		color:#fff;
 		.room {
-			display: flex;
-			margin-top:45rpx;
+			margin-top:30rpx;
+			width: 92%;
+			height: 60rpx;
+			line-height: 60rpx;
+			text-align: center;
+			.text {
+				display: inline-block;
+			}
+			.share {
+				display: inline-block;
+				float: right;
+				border:none;
+				image {
+					width: 50rpx;
+					height: 50rpx;
+				}
+			}
 		}
 		.price {
 			.number {
@@ -92,7 +107,7 @@
 		<view class="header">
 			<view class="room">
 				<view class="text">虎仔山庄-3室2厅2卫-145m2</view>
-				<view class="share">></view>
+				<button class="share" open-type="share" plain><image src="../images/share.png"></image></button>
 			</view>
 			<view class="price">
 				<text class="number">114</text>
@@ -130,7 +145,7 @@
 					<text>该房屋属于多数人说钟爱的主流户型，作为市场刚需产品保值增值能力强,该房屋属于多数人说钟爱的主流户型，作为市场刚需产品保值增值能力强</text>
 				</view>
 			</view>
-			<view class="button">登录查看更多房源分析</view>
+			<button class="button" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber">登录查看更多房源分析</button>
 		</view>
 	</view>
 </template>
@@ -152,10 +167,16 @@ data = {
 computed = {
 }
 onLoad() {
+	// wx.showShareMenu({
+	// 	withShareTicket: true
+	// })
 }
 methods = {
 	goSupply () {
 		wepy.navigateTo({url: 'supplyInfo'})
+	},
+	getPhoneNumber (e) {
+		console.log(e)
 	}
 }
 

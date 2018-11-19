@@ -1,0 +1,240 @@
+<style lang="less" scoped>
+.container {
+	padding:30rpx;
+	width: 100%;
+	align-items: flex-start;
+	.item {
+		width: 100%;
+		margin-bottom: 30rpx;
+		&-head {
+			display: flex;
+			align-items: center;
+			margin-bottom: 25rpx;
+			font-size: 16px;
+			.title {
+				font-size: 13px;
+				color:#888888
+			}
+		}
+		&-content {
+			display: flex;
+			input {
+				width: 100%;
+				height: 70rpx;
+				padding: 0 20rpx;
+				background: #fff;
+				box-sizing: border-box;
+				line-height: 70rpx;
+				border-radius: 5rpx;
+			}
+			.box1 {
+				width: 207rpx;
+				height: 70rpx;
+				background: #fff;
+				line-height: 70rpx;
+				text-align: center;
+				margin-right: 25rpx;
+				margin-bottom: 10rpx; 
+				border-radius: 5rpx;
+				box-sizing: border-box;
+			}
+			.box2 {
+				.box1;
+				width: 220rpx;
+				margin: 0rpx;
+			}
+			.box1:active,.box1:hover {
+				border:1px solid #5dacff;
+				line-height: 66rpx;
+			}
+			.box2:active,.box2:hover {
+				color: #5dacff;
+			}
+			.letter {
+				width: 100%;
+				font-size: 13px;
+				color:#888888;
+				margin-bottom: 25rpx;
+				padding-left: 10rpx;
+			}
+			.city-item {
+				margin-bottom: 20rpx;
+			}
+			.city-box {
+				display: flex;
+				flex-wrap:wrap;
+			}
+		}
+	}
+}
+/* 无数据  */
+.nodata {
+  padding-top: 200rpx;
+  text-align: center;
+  font-size: 32rpx;
+  color: #ddd;
+}
+</style>
+<template>
+<view class="container">
+	<view class="item">
+		<view class="item-head">
+			<view class="title">当前城市</view>
+			<view class="">厦门</view>
+		</view>
+		<view class="item-content">
+			<input placeholder="输入城市名称搜索"/>
+		</view>
+	</view>
+	<view class="item">
+		<view class="item-head">
+			<view class="title">最近访问</view>
+		</view>
+		<view class="item-content">
+			<view class="box1">漳州</view>
+			<view class="box1">厦门</view>
+		</view>
+	</view>
+	<view class="item">
+		<view class="item-head">
+			<view class="title">热门城市</view>
+		</view>
+		<view class="item-content">
+			<view class="box1">北京</view>
+			<view class="box1">上海</view>
+			<view class="box1">广州</view>
+			<view class="box1">深圳</view>
+		</view>
+	</view>
+	<view class="item">
+		<view class="item-head">
+			<view class="title">全部城市（按首字母顺序）</view>
+		</view>
+		<view class="item-content" wx:for="{{allCity}}" wx:for-item="kinds" wx:key="index">
+			<view class="city-item">
+				<view class="letter">{{kinds.title}}</view>
+				<view class="city-box">
+					<view class="box2" wx:for="{{kinds.item}}" wx:for-item="city" wx:key="index">{{city.name}}</view>
+				</view>
+			</view>
+		</view>
+	</view>
+
+	<block wx:if="{{resultData}}">
+	</block>
+	<!-- <block wx:else>
+		<view class='nodata'>没有搜索到相关的数据哦</view>
+	</block> -->
+</view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import allCity from '../utils/allcity.js'
+export default class cityList extends wepy.page {
+	config = {
+		navigationBarTitleText: '选择城市',
+		navigationBarBackgroundColor: '#f5f5f5'
+	}
+    data = {
+        config: {
+            horizontal: true, // 第一个选项是否横排显示（一般第一个数据选项为 热门城市，常用城市之类 ，开启看需求）
+            animation: true, // 过渡动画是否开启
+            search: true, // 是否开启搜索
+        },
+        list: [],
+        rightArr: [], // 右侧字母展示
+        jumpNum: '',  // 跳转到那个字母
+		myCityName: '请选择', // 默认我的城市
+		allCity
+    }
+    onReady() {
+        console.log(this.config)
+    }
+//   ready() {
+//     let data = this.data.data;
+//     this.resetRight(data);
+//     if (this.data.myCity) {
+//       this.getCity()
+//     }
+//   }
+  methods = {
+    // 数据重新渲染
+    // resetRight(data) {
+    //   let rightArr = []
+    //   for (let i in data) {
+    //     rightArr.push(data[i].title.substr(0, 1));
+    //   }
+    //   this.setData({
+    //     list: data,
+    //     rightArr
+    //   })
+    // },
+    // getCity() {
+    //   wx.getLocation({
+    //     type: 'wgs84',
+    //     success: function (res) {
+    //       this.latitude = res.latitude;
+    //       this.longitude = res.longitude;
+    //       // console.log(res)
+    //     }
+    //   })
+    // },
+    // 右侧字母点击事件
+    // jumpMt(e) {
+    //   let jumpNum = e.currentTarget.dataset.id
+    //   this.setData({ jumpNum })
+    // },
+    // 列表点击事件
+    // detailMt(e) {
+    //   let detail = e.currentTarget.dataset.detail
+
+    //   let myEventOption = {
+    //     bubbles: false,//事件是否冒泡
+    //     composed: false,//事件是否可以穿越组件边界
+    //     capturePhase: false //事件是否拥有捕获阶段
+    //   } // 触发事件的选项
+    //   this.triggerEvent('detail', detail, myEventOption)
+
+    // },
+    // // 获取搜索输入内容
+    // input(e) {
+    //   this.value = e.detail.value;
+    // },
+    // // 基础搜索功能
+    // searchMt() {
+    //   this._search();
+    // },
+    // _search(){
+    //   console.log("搜索")
+    //   let data = this.data.data;
+    //   let newData = [];
+    //   for (let i = 0; i < data.length; i++) {
+    //     let itemArr = [];
+    //     for (let j = 0; j < data[i].item.length; j++) {
+    //       if (data[i].item[j].name.indexOf(this.value) > -1) {
+    //         let itemJson = {};
+    //         for (let k in data[i].item[j]) {
+    //           itemJson[k] = data[i].item[j][k];
+    //         }
+    //         itemArr.push(itemJson);
+    //       }
+    //     }
+    //     if (itemArr.length === 0) {
+    //       continue;
+    //     }
+    //     newData.push({
+    //       title: data[i].title,
+    //       type: data[i].type ? data[i].type : "",
+    //       item: itemArr
+    //     })
+    //   }
+    //   this.resetRight(newData);
+    // },
+    // // 城市定位
+    // locationMt() {
+    //   // TODO 暂时没有实现 定位自己的城市，需要引入第三方api
+    // }
+  }
+}
+</script>

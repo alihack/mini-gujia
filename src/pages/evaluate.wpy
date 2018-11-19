@@ -3,6 +3,18 @@
 	height: 100%;
 	.location {
 		margin-top:20rpx;
+		display: flex;
+		align-items: center;
+		.address {
+			width: 30rpx;
+			height: 30rpx;
+			margin-right: 10rpx;
+		}
+		.triangle {
+			width: 20rpx;
+			height: 15rpx;
+			margin-left: 10rpx;
+		}
 	}
 	.title {
 		margin-top:60rpx;
@@ -14,7 +26,6 @@
 		margin-bottom: 50rpx;
 		background: #fff;
 		width: 690rpx;
-		height: 540rpx;
 		border-radius: 10rpx;
 		box-shadow:#ebebeb 0px 0px 10px;
 		font-size: 16px;
@@ -22,7 +33,11 @@
 			display:flex;
 			justify-content: space-between;
 			padding:30rpx;
-			border-top:1px solid #e5e5e5
+			border-top:1px solid #e5e5e5;
+			&-foot {
+				width:40rpx;
+				height:40rpx;
+			}
 		}
 		.cell:first-child {
 			border:none;
@@ -37,28 +52,32 @@
 </style>
 <template>
 	<view class="container">
-		<view class="location">厦门</view>
+		<view class="location">
+			<image class="address" src="../images/address.png"/>
+			<view>厦门</view>
+			<image class="triangle" src="../images/triangle.png"/>
+		</view>
 		<view class="title">算算房子值多少钱</view>
 		<view class="panel">
 			<view class="cell">
 				<view class="cell-head">小区</view>
-				<view class="cell-foot">></view>
+				<image class="cell-foot" src="../images/next.png"/>
 			</view>
 			<view class="cell">
 				<view class="cell-head">面积</view>
-				<view class="cell-foot">></view>
+				<view>m2</view>
 			</view>
 			<view class="cell">
 				<view class="cell-head">户型</view>
-				<view class="cell-foot">></view>
+				<image class="cell-foot" src="../images/next.png"/>
 			</view>
 			<view class="cell">
 				<view class="cell-head">朝向</view>
-				<view class="cell-foot">></view>
+				<image class="cell-foot" src="../images/next.png"/>
 			</view>
 			<view class="cell">
 				<view class="cell-head">楼层</view>
-				<view class="cell-foot">></view>
+				<image class="cell-foot" src="../images/next.png"/>
 			</view>
 		</view>
 		<view class="button" @tap="goResult">估算价值</view>

@@ -2,7 +2,8 @@
 page {
 	width: 100%;
 	height: 100%;
-	font-size: 14px;
+  font-size: 14px;
+  background: #f5f5f5;
 }
 .container {
 	display: flex;
@@ -33,55 +34,57 @@ import 'wepy-async-function'
 export default class extends wepy.app {
   config = {
 	pages: [
+		'pages/evaluateResult',
+		'pages/index',
+		'pages/evaluate',
+		'pages/loginByAuthor',
+		'pages/cityList',
 		'pages/loginByPhone',
 		'pages/loginSuccess',
 		'pages/supplyInfo',
-		'pages/index',
-		'pages/evaluateResult',
-		'pages/evaluate',
-    ],
-    window: {
+	],
+	window: {
 		backgroundTextStyle: 'light',
 		navigationBarBackgroundColor: '#fff',
 		navigationBarTitleText: 'WeChat',
 		navigationBarTextStyle: 'black'
-    }
+	}
   }
 
   globalData = {
-    myUserInfo: null
+	myUserInfo: null
   }
   async onShow() {
-    wepy.clearStorage()  // 清除缓存
+	wx.clearStorage()  // 清除缓存
   }
 
   constructor() {
-    super()
-    this.use('requestfix')
-    this.use('promisify')
-    this.intercept('request', {
-      config (req) { // 这里不能用异步函数
+	super()
+	this.use('requestfix')
+	this.use('promisify')
+	this.intercept('request', {
+	config (req) { // 这里不能用异步函数
 // 上传数据自动加入session
-        if (req.url !== 'sessions') { // 请求session的请求除外
-          const session = wepy.getStorageSync('session')
-          if (!session) {}
-          if (!req.data) req.data = {}
-          if (session) req.data.session = session
-        }
-        console.log('请求开始', req.data)
-        return req
-      },
-      success (res) {
-        console.log('请求完成', res.data.data)
-        return res.data
-      }
-    })
+	if (req.url !== 'sessions') { // 请求session的请求除外
+		const session = wepy.getStorageSync('session')
+		if (!session) {}
+		if (!req.data) req.data = {}
+		if (session) req.data.session = session
+	}
+	console.log('请求开始', req.data)
+	return req
+	},
+	success (res) {
+		console.log('请求完成', res.data.data)
+		return res.data
+	}
+	})
 
 // 省得每次跳转都要打'/pages/'
-    function config (req) { req.url = '/pages/' + req.url; return req }
-    this.intercept('navigateTo', {config})
-    this.intercept('redirectTo', {config})
-    this.intercept('switchTab', {config})
+	function config (req) { req.url = '/pages/' + req.url; return req }
+	this.intercept('navigateTo', {config})
+	this.intercept('redirectTo', {config})
+	this.intercept('switchTab', {config})
   }
 }
 </script>

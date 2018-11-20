@@ -34,14 +34,14 @@ import 'wepy-async-function'
 export default class extends wepy.app {
   config = {
 	pages: [
+		'pages/cityList',
+		'pages/loginByAuthor',
 		'pages/evaluateResult',
+		'pages/loginByPhone',
+		'pages/supplyInfo',
 		'pages/index',
 		'pages/evaluate',
-		'pages/loginByAuthor',
-		'pages/cityList',
-		'pages/loginByPhone',
 		'pages/loginSuccess',
-		'pages/supplyInfo',
 	],
 	window: {
 		backgroundTextStyle: 'light',

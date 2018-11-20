@@ -3,6 +3,7 @@
 	height: 100%;
 	background: #fff;
 	.panel {
+		margin-top:30rpx;
 		padding: 0 30rpx;
 		box-sizing: border-box;
 		display: flex;

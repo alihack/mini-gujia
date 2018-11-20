@@ -2,7 +2,8 @@
 .container {
 	height: 100%;
 	.location {
-		margin-top:20rpx;
+		margin-top:10rpx;
+		padding:10rpx;
 		display: flex;
 		align-items: center;
 		.address {
@@ -122,7 +123,7 @@
 			<text>我的估价历史</text>
 			<view class="border"></view>
 		</view>
-		<view class="box">
+		<view class="box" @tap="goEvaluateResult">
 			<view class="box-head">
 				<view class="building">永年公园美学</view>
 				<view class="room">3室2厅2卫 145m2</view>
@@ -203,6 +204,9 @@ methods = {
 	},
 	goEvaluate () {
 		wepy.navigateTo({url: 'evaluate'})
+	},
+	goEvaluateResult () {
+		wepy.navigateTo({url: 'evaluateResult'})
 	}
 }
 

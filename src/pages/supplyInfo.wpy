@@ -14,10 +14,19 @@
 			align-items: center;
 			border-bottom: 2rpx solid #e5e5e5;
 			.head {
-				font-size:18px
+				font-size:18px;
+				width:75%;
 			}
 			.foot {
 				font-size: 16px;
+			}
+			.arrow {
+				width: 15rpx;
+				height: 15rpx;
+				border-left:4rpx solid #888888;
+				border-bottom:4rpx solid #888888;
+				transform: rotate(-45deg);
+				margin-bottom: 10rpx;
 			}
 		}
 		.item {
@@ -64,6 +73,7 @@
 				<view class="picker">
 					<view class="head">建筑年代</view>
 					<view class="foot">{{houseTime}}年</view>
+					<view class="arrow"></view>
 				</view>
 			</picker>
 			<view class="item">

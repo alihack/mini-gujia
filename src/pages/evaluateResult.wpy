@@ -48,8 +48,8 @@
 			margin:40rpx 0;
 			color:#d5e5ff;
 			&-center {
-				border-left:4rpx solid #fff;
-				border-right:4rpx solid #fff;
+				border-left:1px solid #fff;
+				border-right:1px solid #fff;
 				padding:0 30rpx 0 30rpx;
 			}
 		}
@@ -128,7 +128,7 @@
 					<view class="count">577万~639万</view>
 				</view>
 			</view>
-			<view class="button">订阅楼盘价格波动</view>
+			<button class="button" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber">订阅楼盘价格波动</button>
 		</view>
 		<view class="main">
 			<view class="title">该楼盘历史均价走势图</view>
@@ -177,6 +177,7 @@ methods = {
 	},
 	getPhoneNumber (e) {
 		console.log(e)
+		wx.reLaunch({url: 'loginByPhone'})
 	}
 }
 

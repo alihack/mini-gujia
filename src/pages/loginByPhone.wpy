@@ -8,9 +8,17 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		.close {
+			margin-top:30rpx;
+			width: 100%;
+			image {
+				width: 40rpx;
+				height: 40rpx;
+				padding: 10rpx;
+			}
+		}
 		.title {
 			font-size: 21px;
-			margin:80rpx 0;
 		}
 		.button {
 			margin-top:50rpx;
@@ -24,6 +32,11 @@
 			font-size: 16px;
 			box-sizing: border-box;
 			border-bottom: 1px solid #e5e5e5;
+			.remain {
+				color:#cccccc;
+				font-size: 14px;
+				padding-top:8rpx;
+			}
 			.btn-code {
 				width:175rpx;
 				height: 50rpx;
@@ -44,13 +57,17 @@
 <template>
 	<view class="container">
 		<view class="panel">
+			<view class="close" @tap="close">
+				<image src="../images/close.png"></image>
+			</view>
 			<view class="title">手机号快捷登录</view>
 			<view class="item">
-				<input type="number" placeholder="请输入手机号" bindconfirm="onPhoneConfirm"></input>
-				<view class="btn-code">获取验证码</view>
+				<input type="number" placeholder="请输入手机号" bindinput="onPhoneChange"></input>
+				<view class="btn-code" wx:if="{{!isGetingCode}}" @tap="getCode">获取验证码</view>
+				<view class="remain" wx:else>重新获取（{{remainTime}}s）</view>
 			</view>
 			<view class="item">
-				<input placeholder="请输入验证码" bindconfirm="onCodeConfirm"></input>
+				<input placeholder="请输入验证码" bindinput="onCodeChange"></input>
 			</view>
 			<view class="code"></view>
 			<view class="button" @tap="login">登录</view>
@@ -69,7 +86,10 @@ components = {
 }
 
 data = {
-	houseTime: '1998'
+	phoneNum: '',
+	codeNum: '',
+	isGetingCode: false,
+	remainTime: 60
 }
 
 computed = {
@@ -77,18 +97,39 @@ computed = {
 onLoad() {
 }
 methods = {
-	goResult() {
-		wepy.navigateTo({url: 'evaluateResult'})
+	close() {
+		wepy.redirectTo({url: 'index'})
 	},
-	onPickerChange ({detail: {value}}) {
-		console.log(value)
-		this.houseTime = value
-	},
-	goEvaluate() {
-		wepy.redirectTo({url: 'evaluate'})
+	getCode() {
+		// 验证手机号
+		if (this.phoneNum && /^1[34578]\d{9}$/.test(this.phoneNum)) {
+			console.log('验证通过')
+			this.isGetingCode = true
+			const timer = setInterval(() => {
+				if (this.remainTime <= 1) {
+					clearInterval(timer)
+					this.isGetingCode = false
+					this.remainTime = 60
+				}
+				this.remainTime -= 1
+				this.$apply()
+			}, 1000)
+		} else {
+			wx.showToast({
+				title: '请输入正确的手机号',
+				icon: 'none'
+			})
+		}
 	},
 	login() {
+		// 校验验证码
 		wepy.redirectTo({url: 'loginSuccess'})
+	},
+	onPhoneChange ({detail: {value}}) {
+		this.phoneNum = value
+	},
+	onCodeChange ({detail: {value}}) {
+		this.codeNum = value
 	}
 }
 

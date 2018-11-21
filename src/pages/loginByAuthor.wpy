@@ -31,6 +31,7 @@
 
 <script>
 import wepy from 'wepy'
+import api from '../utils/api'
 export default class loginByAuthor extends wepy.page {
 config = {
 	navigationBarTitleText: '房牛估价',
@@ -49,7 +50,35 @@ onLoad() {
 methods = {
 	getUserInfo({detail}) {
 		console.log(detail)
-		wepy.redirectTo({url: 'index'})
+		wx.login({
+			success: async (res) => {
+				if (res.code) {
+					console.log(res)
+					const resLogin = await wepy.request({
+						url: api['login/saveUser'],
+						data: {
+							code: res.code,
+							encryptedData: detail.encryptedData,
+							iv: detail.iv
+						}
+					})
+					if (resLogin.code == 200) {
+						wx.showToast({
+							title: '登录成功'
+						})
+						wepy.redirectTo({url: 'index'})
+					} else {
+						wx.showToast({
+							title: '登录失败',
+							icon: 'none'
+						})
+					}
+					console.log(resLogin)
+				} else {
+					console.log('登录失败！' + res.errMsg)
+				}
+			}
+		})
 	}
 }
 

@@ -23,23 +23,6 @@
 		font-size: 23px;
 		font-family: bold;
 	}
-	.panel {
-		margin-top:70rpx;
-		background: #fff;
-		width: 690rpx;
-		height: 540rpx;
-		border-radius: 10rpx;
-		box-shadow:#ebebeb 0px 0px 10px;
-		.cell {
-			display:flex;
-			justify-content: space-between;
-			padding:30rpx;
-			border-top:1px solid #e5e5e5
-		}
-		.cell:first-child {
-			border:none;
-		}
-	}
 	.tips {
 		display: flex;
 		width: 690rpx;
@@ -107,6 +90,42 @@
 			}
 		}
 	}
+	.panel {
+		margin-top:30rpx;
+		margin-bottom: 50rpx;
+		background: #fff;
+		width: 690rpx;
+		border-radius: 10rpx;
+		box-shadow:#ebebeb 0px 0px 10px;
+		font-size: 16px;
+		.cell {
+			display:flex;
+			justify-content: space-between;
+			padding:30rpx;
+			border-top:1px solid #e5e5e5;
+			&-head {
+				display: flex;
+				&-content {
+					margin-left:30rpx;
+					input {
+					}
+				}
+			}
+			.sup {
+				vertical-align: super;
+				font-size: 10px;
+			}
+			&-foot {
+				width:40rpx;
+				height:40rpx;
+			}
+		}
+		&-tips {
+			margin-top:25rpx;
+			font-size: 12px;
+			color:#cecece;
+		}
+	}
 }
 </style>
 <template>
@@ -116,37 +135,86 @@
 			<view>厦门</view>
 			<image class="triangle" src="../images/triangle.png"/>
 		</view>
-		<view class="title">我的房子值多少钱</view>
-		<view class="button" @tap="goEvaluate">再次估价</view>
-		<view class="tips">
-			<view class="border"></view>
-			<text>我的估价历史</text>
-			<view class="border"></view>
-		</view>
-		<view class="box" @tap="goEvaluateResult">
-			<view class="box-head">
-				<view class="building">永年公园美学</view>
-				<view class="room">3室2厅2卫 145m2</view>
-			</view>
-			<view class="box-main">
-				<view class="price">
-					<text class="number">114</text>
-					<text class="unit">万</text>
+		<view class="title">{{showEvaluatePanel? '我的房子值多少钱' : '算算房子值多少钱'}}</view>
+		<!-- 无估价历史 -->
+		<block wx:if="{{showEvaluatePanel}}">
+			<view class="panel">
+				<view class="cell">
+					<view class="cell-head">小区</view>
+					<image class="cell-foot" src="../images/next.png"/>
 				</view>
-				<image class="arrow" src="../images/next.png"/>
+				<view class="cell">
+					<view class="cell-head">
+							<view class="cell-head-title">面积</view>
+							<view class="cell-head-content"><input placeholder="请输入" bindinput="onInputChange" value="{{searchText}}"/></view>
+						</view>
+					<view><text>m</text><text class="sup">2</text></test></view>
+				</view>
+				<picker mode="multiSelector" bindchange="onTypeChange"  range="{{houseTypeArry}}">
+					<view class="cell">
+						<view class="cell-head">
+							<view class="cell-head-title">户型</view>
+							<view class="cell-head-content">{{typeValue}}</view>
+						</view>
+						<image class="cell-foot" src="../images/next.png"/>
+					</view>
+				</picker>
+				<picker bindchange="onOrientationChange"  range="{{orientationArry}}">
+					<view class="cell">
+						<view class="cell-head">
+							<view class="cell-head-title">朝向</view>
+							<view class="cell-head-content">{{orientationValue}}</view>
+						</view>
+						<image class="cell-foot" src="../images/next.png"/>
+					</view>
+				</picker>
+				<picker mode="multiSelector" bindchange="onStoreyChange"  range="{{storeyArry}}">
+					<view class="cell">
+						<view class="cell-head">
+							<view class="cell-head-title">楼层</view>
+							<view class="cell-head-content">{{storeyValue}}</view>
+						</view>
+						<image class="cell-foot" src="../images/next.png"/>
+					</view>
+				</picker>
 			</view>
-			<view class="box-foot">
-				<view class="text">环比上个月下跌1.2%</view>
-				<image class="icon" src="../images/decline.png"></image>
+			<view class="button" @tap="goResult">估算价值</view>
+			<view class="panel-tips">估价结果基于海量真实房源交易数据得出</view>
+		</block>
+		<!-- 有估价历史 -->
+		<block wx:else>
+			<view class="button" @tap="goEvaluate">再次估价</view>
+			<view class="tips">
+				<view class="border"></view>
+				<text>我的估价历史</text>
+				<view class="border"></view>
 			</view>
-		</view>
+			<view class="box" @tap="goEvaluateResult">
+				<view class="box-head">
+					<view class="building">永年公园美学</view>
+					<view class="room">3室2厅2卫 145m2</view>
+				</view>
+				<view class="box-main">
+					<view class="price">
+						<text class="number">114</text>
+						<text class="unit">万</text>
+					</view>
+					<image class="arrow" src="../images/next.png"/>
+				</view>
+				<view class="box-foot">
+					<view class="text">环比上个月下跌1.2%</view>
+					<image class="icon" src="../images/decline.png"></image>
+				</view>
+			</view>
+		</block>
 	</view>
 </template>
 
 <script>
 import wepy from 'wepy'
-import {login, getMyInfo} from '../utils/util'
-import QQMapWX from '../utils/qqmap-wx-jssdk.js'
+import api from '../utils/api'
+import {getUserId, getUserInfo, getLocation} from '../utils/util'
+import {houseTypeArry, orientationArry, storeyArry} from '../utils/config'
 export default class Index extends wepy.page {
 config = {
 	navigationBarTitleText: '房牛估价',
@@ -156,58 +224,60 @@ components = {
 }
 
 data = {
-	myCity: ''
+	showEvaluatePanel: true,
+	houseTypeArry,
+	orientationArry,
+	storeyArry,
+	typeValue: '',
+	orientationValue: '',
+	storeyValue: '',
+	addressInfo: {}
 }
 
 computed = {
 }
-async onLoad() {
-	// await login()
-	// await getMyInfo()
-	// this.methods.getLocation()
+async onShow() {
+	await getUserId()
+	await getUserInfo()
+	await this.methods.getEvaluationHistory()
+	await getLocation()
 }
 methods = {
-	getLocation: () => {
+	getEvaluationHistory: () => {
 		return new Promise(async resolve => {
-			// 实例化API核心类
-			const qqmapsdk = new QQMapWX({
-				key: 'KUBBZ-HYIKF-II2J3-NYSEA-IY3ZQ-KTBP3'
-			})
-			wx.getLocation({
-				type: 'gcj02',
-				success: res => {
-					console.log(res)
-					qqmapsdk.reverseGeocoder({
-						location: {
-							latitude: res.latitude,
-							longitude: res.longitude
-						},
-						success: ({result: {ad_info}}) => {
-							const resCity = ad_info.city
-							this.myCity = resCity.slice(0, resCity.length - 1)
-							console.log(this.city)
-							this.$apply()
-						},
-						fail: function(res) {
-							console.log(res)
-						},
-						complete: function(res) {
-							resolve()
-						}
-					})
+			const {data} = await wepy.request({
+				url: api['user/getEvaluationHistory'],
+				data: {
+					uid: wepy.$instance.globalData.myUserInfo.uid
 				}
 			})
+			console.log(data)
+			if (data) this.showEvaluatePanel = false
+			resolve()
 		})
 	},
 	chooseCity() {
 		wepy.navigateTo({url: 'cityList'})
 	},
 	goEvaluate () {
-		wepy.navigateTo({url: 'evaluate'})
+		this.showEvaluatePanel = true
 	},
-	goEvaluateResult () {
+	goResult () {
 		wepy.navigateTo({url: 'evaluateResult'})
-	}
+	},
+	onTypeChange({detail: {value}}) {
+		this.typeValue = this.houseTypeArry[0][value[0]] + this.houseTypeArry[1][value[1]] + this.houseTypeArry[2][value[2]]
+	},
+	onOrientationChange({detail: {value}}) {
+		this.orientationValue = this.orientationArry[value]
+	},
+	onStoreyChange({detail: {value}}) {
+		if (value[0] >= value[1]) {
+			this.storeyValue = this.storeyArry[0][value[1]]
+		} else {
+			this.storeyValue = this.storeyArry[0][value[0]]
+		}
+	},
 }
 
 events = {

@@ -34,13 +34,12 @@ import 'wepy-async-function'
 export default class extends wepy.app {
   config = {
 	pages: [
-		'pages/cityList',
+		'pages/index',
 		'pages/loginByAuthor',
+		'pages/cityList',
 		'pages/evaluateResult',
 		'pages/loginByPhone',
 		'pages/supplyInfo',
-		'pages/index',
-		'pages/evaluate',
 		'pages/loginSuccess',
 	],
 	window: {
@@ -64,18 +63,13 @@ export default class extends wepy.app {
 	this.use('promisify')
 	this.intercept('request', {
 	config (req) { // 这里不能用异步函数
-// 上传数据自动加入session
-	if (req.url !== 'sessions') { // 请求session的请求除外
-		const session = wepy.getStorageSync('session')
-		if (!session) {}
-		if (!req.data) req.data = {}
-		if (session) req.data.session = session
-	}
-	console.log('请求开始', req.data)
-	return req
+		req.header = {'content-type': 'application/x-www-form-urlencoded'}
+		req.method = 'POST'
+		console.log('请求开始', req.data)
+		return req
 	},
 	success (res) {
-		console.log('请求完成', res.data.data)
+		console.log('请求完成', res.data)
 		return res.data
 	}
 	})

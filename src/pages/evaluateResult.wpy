@@ -106,18 +106,18 @@
 	<view class="container">
 		<view class="header">
 			<view class="room">
-				<view class="text">虎仔山庄-3室2厅2卫-145m2</view>
+				<view class="text">{{currentData.community_name}}-{{currentData.house_type}}-{{currentData.acreage}}m<text class="sup-text">2</text></view>
 				<button class="share" open-type="share" plain><image src="../images/share.png"></image></button>
 			</view>
 			<view class="price">
-				<text class="number">114</text>
+				<text class="number">{{currentData.total_price}}</text>
 				<text class="unit">万</text>
 			</view>
 			<view class="supply" @tap="goSupply">点击补充楼房信息 估值更精准</view>
 			<view class="detail">
 				<view class="detail-left">
 					<view class="title">房屋均价</view>
-					<view class="count">54195元 /m2</view>
+					<view class="count">{{currentData.unit_price}}元 /m<text class="sup-text">2</text></view>
 				</view>
 				<view class="detail-center">
 					<view class="title">环比上月变化</view>
@@ -162,18 +162,20 @@ components = {
 }
 
 data = {
+	currentData: {}
 }
 
 computed = {
 }
 onLoad() {
-	// wx.showShareMenu({
-	// 	withShareTicket: true
-	// })
+	// 获取前一页面数据
+	const pages = getCurrentPages()
+	const prevPage = pages[pages.length - 2]
+	this.currentData = prevPage.data.currentData
 }
 methods = {
 	goSupply () {
-		wepy.navigateTo({url: 'supplyInfo'})
+		wepy.navigateTo({url: `supplyInfo?id=${this.currentData.id}`})
 	},
 	getPhoneNumber (e) {
 		console.log(e)

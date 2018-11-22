@@ -111,10 +111,6 @@
 					}
 				}
 			}
-			.sup {
-				vertical-align: super;
-				font-size: 10px;
-			}
 			&-foot {
 				width:40rpx;
 				height:40rpx;
@@ -139,16 +135,19 @@
 		<!-- 无估价历史 -->
 		<block wx:if="{{showEvaluatePanel}}">
 			<view class="panel">
-				<view class="cell">
-					<view class="cell-head">小区</view>
-					<image class="cell-foot" src="../images/next.png"/>
-				</view>
+				<view class="cell" @tap="goSearch">
+						<view class="cell-head">
+							<view class="cell-head-title">小区</view>
+							<view class="cell-head-content">{{currentCommunity.Name}}</view>
+						</view>
+						<image class="cell-foot" src="../images/next.png"/>
+					</view>
 				<view class="cell">
 					<view class="cell-head">
 							<view class="cell-head-title">面积</view>
-							<view class="cell-head-content"><input placeholder="请输入" bindinput="onInputChange" value="{{searchText}}"/></view>
+							<view class="cell-head-content"><input placeholder="请输入" bindinput="onAreaChange" value="{{searchText}}"/></view>
 						</view>
-					<view><text>m</text><text class="sup">2</text></test></view>
+					<view><text>m</text><text class="sup-text">2</text></test></view>
 				</view>
 				<picker mode="multiSelector" bindchange="onTypeChange"  range="{{houseTypeArry}}">
 					<view class="cell">
@@ -189,14 +188,17 @@
 				<text>我的估价历史</text>
 				<view class="border"></view>
 			</view>
-			<view class="box" @tap="goEvaluateResult">
+			<view class="box" @tap="goDeatil({{index}})" wx:for="{{historyList}}" wx:key="index">
 				<view class="box-head">
-					<view class="building">永年公园美学</view>
-					<view class="room">3室2厅2卫 145m2</view>
+					<view class="building">{{item.community_name}}</view>
+					<view class="room">
+						{{item.house_type}} 
+						{{item.acreage}}m<text class="sup-text">2</text>
+					</view>
 				</view>
 				<view class="box-main">
 					<view class="price">
-						<text class="number">114</text>
+						<text class="number">{{item.total_price}}</text>
 						<text class="unit">万</text>
 					</view>
 					<image class="arrow" src="../images/next.png"/>
@@ -225,13 +227,18 @@ components = {
 
 data = {
 	showEvaluatePanel: true,
+	addressInfo: {},
+	currentCommunity: {},
+	historyList: [],
+	currentData: '',
+	// 以下为表单所需数据
 	houseTypeArry,
 	orientationArry,
 	storeyArry,
 	typeValue: '',
 	orientationValue: '',
 	storeyValue: '',
-	addressInfo: {}
+	allStorey: '',
 }
 
 computed = {
@@ -240,9 +247,20 @@ async onShow() {
 	await getUserId()
 	await getUserInfo()
 	await this.methods.getEvaluationHistory()
-	await getLocation()
+	// await getLocation()
+	this.currentCommunity = wx.getStorageSync('currentCommunity')
+	this.$apply()
+	console.log('当前小区', this.currentCommunity)
 }
 methods = {
+	dataController: (ele) => {
+		const typeArr = ele.house_type.split('-')
+		ele.house_type = typeArr[0] + '室' + typeArr[1] + '厅' + typeArr[2] + '卫'
+		ele.total_price = parseFloat(ele.total_price)
+		ele.unit_price = parseFloat(ele.unit_price)
+		ele.acreage = parseFloat(ele.acreage)
+		return ele
+	},
 	getEvaluationHistory: () => {
 		return new Promise(async resolve => {
 			const {data} = await wepy.request({
@@ -252,7 +270,18 @@ methods = {
 				}
 			})
 			console.log(data)
-			if (data) this.showEvaluatePanel = false
+			if (data) {
+				if (this.currentCommunity) this.showEvaluatePanel = false
+				this.historyList = data.list
+				// 对数据进行格式处理
+				this.historyList.forEach(ele => {
+					const newData = this.methods.dataController(ele)
+					ele.house_type = newData.house_type
+					ele.unit_price = newData.unit_price
+					ele.total_price = newData.total_price
+					ele.acreage = newData.acreage
+				})
+			}
 			resolve()
 		})
 	},
@@ -262,7 +291,30 @@ methods = {
 	goEvaluate () {
 		this.showEvaluatePanel = true
 	},
-	goResult () {
+	async goResult () {
+		// 提交表单
+		const form = {}
+		form.city_id = this.currentCommunity.AreaCode
+		form.ProjectId = this.currentCommunity.Id
+		form.community_name = this.currentCommunity.Name
+		form.acreage = this.areaValue
+		form.house_type = this.typeValue.replace(/[^0-9]/ig, '-').slice(0, 5)
+		form.orientation = this.orientationValue
+		form.storey = this.storeyValue + this.allStorey
+		form.uid = wepy.$instance.globalData.myUserInfo.uid
+		console.log(form)
+		const {data} = await wepy.request({
+			url: api['index/getHousePrice'],
+			data: form
+		})
+		this.currentData = data
+		// 对数据进行格式处理
+		const newData = this.methods.dataController(this.currentData)
+		this.currentData.house_type = newData.house_type
+		this.currentData.unit_price = newData.unit_price
+		this.currentData.total_price = newData.total_price
+		this.currentData.acreage = newData.acreage
+		// 清空表单数据
 		wepy.navigateTo({url: 'evaluateResult'})
 	},
 	onTypeChange({detail: {value}}) {
@@ -272,12 +324,25 @@ methods = {
 		this.orientationValue = this.orientationArry[value]
 	},
 	onStoreyChange({detail: {value}}) {
+		console.log(value)
+		this.allStorey = this.storeyArry[1][value[1]]
 		if (value[0] >= value[1]) {
 			this.storeyValue = this.storeyArry[0][value[1]]
 		} else {
 			this.storeyValue = this.storeyArry[0][value[0]]
 		}
 	},
+	onAreaChange ({detail: {value}}) {
+		this.areaValue = value
+	},
+	goSearch() {
+		wepy.navigateTo({url: 'searchCommunity'})
+	},
+	goDeatil(index) {
+		console.log(index)
+		this.currentData = this.historyList[index]
+		wepy.navigateTo({url: 'evaluateResult'})
+	}
 }
 
 events = {

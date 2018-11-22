@@ -66,7 +66,7 @@ methods = {
 						wx.showToast({
 							title: '登录成功'
 						})
-						wepy.redirectTo({url: 'index'})
+						// wepy.redirectTo({url: 'index'})
 					} else {
 						wx.showToast({
 							title: '登录失败',

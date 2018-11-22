@@ -8,6 +8,12 @@ const apis = [
 	'login/saveUser',
 	'user/getUserInfo',
 	'user/getEvaluationHistory',
+	'user/getCity',
+	'user/saveCity',
+	'index/getCommunityList',
+	'index/getHousePrice',
+	'index/addHouseInfo',
+	'index/getCityList'
 ]
 
 const env = 'dev' // dev: 本地测试服务器， prod：线上服务器, test：测试服务器

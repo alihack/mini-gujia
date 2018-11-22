@@ -53,7 +53,7 @@
 				.kind:last-child {
 					margin-right: 0;
 				}
-				.kind:active,.kind:hover {
+				.selectedKind {
 					border:1px solid #5dacff;
 					background: #fff;
 					line-height: 68rpx;
@@ -72,43 +72,37 @@
 			<picker bindchange="onPickerChange" value="{{index}}" mode = "date" fields="year">
 				<view class="picker">
 					<view class="head">建筑年代</view>
-					<view class="foot">{{houseTime}}年</view>
+					<view class="foot">{{buildingYear}}年</view>
 					<view class="arrow"></view>
 				</view>
 			</picker>
 			<view class="item">
 				<view class="item-title">建筑类型</view>
 				<view class="item-kinds">
-					<view class="kind">板楼</view>
-					<view class="kind">塔楼</view>
-					<view class="kind">板塔结合</view>
-					<view class="kind">平房</view>
+					<view class="kind {{item == buildingTypeValue? 'selectedKind':''}}" wx:for="{{buildingTypeArry}}" wx:key="index" @tap="setBuildingType({{item}})">{{item}}</view>
 				</view>
 			</view>
 			<view class="item">
 				<view class="item-title">装修类型</view>
 				<view class="item-kinds">
-					<view class="kind">豪华装修</view>
-					<view class="kind">精装</view>
-					<view class="kind">简装</view>
-					<view class="kind">毛培</view>
+					<view class="kind {{item == decoratioTypeValue? 'selectedKind':''}}" wx:for="{{decoratioTypeArry}}" wx:key="index" @tap="setDecoratioType({{item}})">{{item}}</view>
 				</view>
 			</view>
 			<view class="item">
 				<view class="item-title">额外面积</view>
 				<view class="item-kinds">
-					<view class="kind">有</view>
-					<view class="kind">无</view>
-					<view class="kind">不清楚</view>
+					<view class="kind {{item == extraAreaValue? 'selectedKind':''}}" wx:for="{{extraAreaArry}}" wx:key="index" @tap="setExtraArea({{item}})">{{item}}</view>
 				</view>
 			</view>
-			<view class="button">提交</view>
+			<view class="button" @tap="submit">提交</view>
 		</view>
 	</view>
 </template>
 
 <script>
 import wepy from 'wepy'
+import api from '../utils/api'
+import {buildingTypeArry, decoratioTypeArry, extraAreaArry} from '../utils/config'
 export default class Index extends wepy.page {
 config = {
 	navigationBarTitleText: '补充楼房信息',
@@ -118,12 +112,20 @@ components = {
 }
 
 data = {
-	houseTime: '1998'
+	buildingTypeArry,
+	decoratioTypeArry,
+	extraAreaArry,
+	buildingYear: '1998',
+	buildingTypeValue: '',
+	decoratioTypeValue: '',
+	extraAreaValue: '',
+	id: ''
 }
 
 computed = {
 }
-onLoad() {
+onLoad({id}) {
+	this.id = id
 }
 methods = {
 	goResult() {
@@ -131,7 +133,34 @@ methods = {
 	},
 	onPickerChange ({detail: {value}}) {
 		console.log(value)
-		this.houseTime = value
+		this.buildingYear = value
+	},
+	setBuildingType (item) {
+		this.buildingTypeValue = item
+	},
+	setDecoratioType (item) {
+		this.decoratioTypeValue = item
+	},
+	setExtraArea (item) {
+		this.extraAreaValue = item
+	},
+	async submit() {
+		await wepy.request({
+			url: api['index/addHouseInfo'],
+			data: {
+				id: this.id,
+				buildingYear: this.buildingYear,
+				buildingType: this.buildingTypeValue,
+				decoratioType: this.decoratioTypeValue,
+				extraArea: this.extraAreaValue
+			}
+		})
+		wx.showToast({
+			title: '补充成功'
+		})
+		setTimeout(() => {
+			wepy.navigateBack()
+		}, 1000)
 	}
 }
 

@@ -24,6 +24,10 @@ page {
 	.button:active {
 		background: #2d8cf0;
 	}
+	.sup-text {
+		vertical-align: super;
+		font-size: 10px;
+	}
 }
 </style>
 
@@ -35,11 +39,12 @@ export default class extends wepy.app {
   config = {
 	pages: [
 		'pages/index',
-		'pages/loginByAuthor',
 		'pages/cityList',
+		'pages/supplyInfo',
+		'pages/searchCommunity',
+		'pages/loginByAuthor',
 		'pages/evaluateResult',
 		'pages/loginByPhone',
-		'pages/supplyInfo',
 		'pages/loginSuccess',
 	],
 	window: {

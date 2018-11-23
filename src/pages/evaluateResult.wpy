@@ -128,7 +128,8 @@
 					<view class="count">577万~639万</view>
 				</view>
 			</view>
-			<button class="button" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber">订阅楼盘价格波动</button>
+			<button class="button" @tap="getPhone">订阅楼盘价格波动</button>
+			<!-- <button class="button" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber">订阅楼盘价格波动</button> -->
 		</view>
 		<view class="main">
 			<view class="title">该楼盘历史均价走势图</view>
@@ -138,11 +139,11 @@
 			<view class="title">房源分析</view>
 			<view class="box">
 				<view class="box-left">
-					<view class="room">3室2厅2卫</view>
-					<view class="area">148m2</view>
+					<view class="room">{{currentData.house_type}}</view>
+					<view class="area">{{currentData.acreage}}m<text class="sup-text">2</text></view>
 				</view>
 				<view class="box-right">
-					<text>该房屋属于多数人说钟爱的主流户型，作为市场刚需产品保值增值能力强,该房屋属于多数人说钟爱的主流户型，作为市场刚需产品保值增值能力强</text>
+					<text>{{currentData.sourceAnalyze}}</text>
 				</view>
 			</view>
 			<button class="button" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber">登录查看更多房源分析</button>
@@ -180,6 +181,9 @@ methods = {
 	getPhoneNumber (e) {
 		console.log(e)
 		wx.reLaunch({url: 'loginByPhone'})
+	},
+	getPhone () {
+		wepy.navigateTo({url: 'loginByPhone'})
 	}
 }
 

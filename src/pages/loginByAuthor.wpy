@@ -55,7 +55,7 @@ methods = {
 				if (res.code) {
 					console.log(res)
 					const resLogin = await wepy.request({
-						url: api['login/saveUser'],
+						url: api['saveUser'],
 						data: {
 							code: res.code,
 							encryptedData: detail.encryptedData,

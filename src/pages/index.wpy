@@ -1,4 +1,12 @@
 <style lang="less">
+@keyframes fadeUp {	
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
 .container {
 	height: 100%;
 	.location {
@@ -105,6 +113,9 @@
 			border-top:1px solid #e5e5e5;
 			&-head {
 				display: flex;
+				.red {
+					color: red
+				}
 				&-content {
 					margin-left:30rpx;
 					input {
@@ -122,37 +133,42 @@
 			color:#cecece;
 		}
 	}
+	.animation {
+		animation: fadeUp 2s;
+	}
 }
 </style>
 <template>
 	<view class="container">
 		<view class="location" @tap="chooseCity">
 			<image class="address" src="../images/address.png"/>
-			<view>厦门</view>
+			<view>{{currentCity.name}}</view>
 			<image class="triangle" src="../images/triangle.png"/>
 		</view>
 		<view class="title">{{showEvaluatePanel? '我的房子值多少钱' : '算算房子值多少钱'}}</view>
 		<!-- 无估价历史 -->
-		<block wx:if="{{showEvaluatePanel}}">
+		<view wx:if="{{showEvaluatePanel}}" class="animation">
 			<view class="panel">
 				<view class="cell" @tap="goSearch">
 						<view class="cell-head">
-							<view class="cell-head-title">小区</view>
+							<view class="cell-head-title {{titleBeRed[0] ? 'red' : ''}}">小区</view>
 							<view class="cell-head-content">{{currentCommunity.Name}}</view>
 						</view>
 						<image class="cell-foot" src="../images/next.png"/>
 					</view>
 				<view class="cell">
 					<view class="cell-head">
-							<view class="cell-head-title">面积</view>
-							<view class="cell-head-content"><input placeholder="请输入" bindinput="onAreaChange" value="{{searchText}}"/></view>
+							<view class="cell-head-title {{titleBeRed[1] ? 'red' : ''}}">面积</view>
+							<view class="cell-head-content">
+								<input placeholder="请输入" bindinput="onAreaChange" value="{{searchText}}" type="number"/>
+							</view>
 						</view>
 					<view><text>m</text><text class="sup-text">2</text></test></view>
 				</view>
 				<picker mode="multiSelector" bindchange="onTypeChange"  range="{{houseTypeArry}}">
 					<view class="cell">
 						<view class="cell-head">
-							<view class="cell-head-title">户型</view>
+							<view class="cell-head-title {{titleBeRed[2] ? 'red' : ''}}">户型</view>
 							<view class="cell-head-content">{{typeValue}}</view>
 						</view>
 						<image class="cell-foot" src="../images/next.png"/>
@@ -161,7 +177,7 @@
 				<picker bindchange="onOrientationChange"  range="{{orientationArry}}">
 					<view class="cell">
 						<view class="cell-head">
-							<view class="cell-head-title">朝向</view>
+							<view class="cell-head-title {{titleBeRed[3] ? 'red' : ''}}">朝向</view>
 							<view class="cell-head-content">{{orientationValue}}</view>
 						</view>
 						<image class="cell-foot" src="../images/next.png"/>
@@ -170,7 +186,7 @@
 				<picker mode="multiSelector" bindchange="onStoreyChange"  range="{{storeyArry}}">
 					<view class="cell">
 						<view class="cell-head">
-							<view class="cell-head-title">楼层</view>
+							<view class="cell-head-title {{titleBeRed[4] ? 'red' : ''}}">楼层</view>
 							<view class="cell-head-content">{{storeyValue}}</view>
 						</view>
 						<image class="cell-foot" src="../images/next.png"/>
@@ -179,9 +195,9 @@
 			</view>
 			<view class="button" @tap="goResult">估算价值</view>
 			<view class="panel-tips">估价结果基于海量真实房源交易数据得出</view>
-		</block>
+		</view>
 		<!-- 有估价历史 -->
-		<block wx:else>
+		<view wx:else class="animation">
 			<view class="button" @tap="goEvaluate">再次估价</view>
 			<view class="tips">
 				<view class="border"></view>
@@ -208,14 +224,14 @@
 					<image class="icon" src="../images/decline.png"></image>
 				</view>
 			</view>
-		</block>
+		</view>
 	</view>
 </template>
 
 <script>
 import wepy from 'wepy'
 import api from '../utils/api'
-import {getUserId, getUserInfo, getLocation} from '../utils/util'
+import {getUserId, getUserInfo, getLocation, dataController} from '../utils/util'
 import {houseTypeArry, orientationArry, storeyArry} from '../utils/config'
 export default class Index extends wepy.page {
 config = {
@@ -227,15 +243,17 @@ components = {
 
 data = {
 	showEvaluatePanel: true,
-	addressInfo: {},
 	currentCommunity: {},
+	currentCity: {},
 	historyList: [],
 	currentData: '',
+	titleBeRed: [0, 0, 0, 0, 0],
 	// 以下为表单所需数据
 	houseTypeArry,
 	orientationArry,
 	storeyArry,
 	typeValue: '',
+	areaValue: '',
 	orientationValue: '',
 	storeyValue: '',
 	allStorey: '',
@@ -247,41 +265,34 @@ async onShow() {
 	await getUserId()
 	await getUserInfo()
 	await this.methods.getEvaluationHistory()
-	// await getLocation()
+	await getLocation()
+	this.currentCity = wx.getStorageSync('locationInfo')
 	this.currentCommunity = wx.getStorageSync('currentCommunity')
 	this.$apply()
-	console.log('当前小区', this.currentCommunity)
 }
 methods = {
-	dataController: (ele) => {
-		const typeArr = ele.house_type.split('-')
-		ele.house_type = typeArr[0] + '室' + typeArr[1] + '厅' + typeArr[2] + '卫'
-		ele.total_price = parseFloat(ele.total_price)
-		ele.unit_price = parseFloat(ele.unit_price)
-		ele.acreage = parseFloat(ele.acreage)
-		return ele
-	},
 	getEvaluationHistory: () => {
 		return new Promise(async resolve => {
-			const {data} = await wepy.request({
-				url: api['user/getEvaluationHistory'],
+			const {data: {list}} = await wepy.request({
+				url: api['getEvaluationHistory'],
 				data: {
 					uid: wepy.$instance.globalData.myUserInfo.uid
 				}
 			})
-			console.log(data)
-			if (data) {
-				if (this.currentCommunity) this.showEvaluatePanel = false
-				this.historyList = data.list
+			if (list) {
+				if (wx.getStorageSync('showEvaluatePanel')) {
+					this.showEvaluatePanel = true
+				} else {
+					this.showEvaluatePanel = false
+				}
+				this.historyList = list.slice(0, 3)
 				// 对数据进行格式处理
-				this.historyList.forEach(ele => {
-					const newData = this.methods.dataController(ele)
-					ele.house_type = newData.house_type
-					ele.unit_price = newData.unit_price
-					ele.total_price = newData.total_price
-					ele.acreage = newData.acreage
+				this.historyList.forEach(async ele => {
+					const newData = await dataController(ele)
+					ele = newData
 				})
 			}
+			this.$apply()
 			resolve()
 		})
 	},
@@ -289,9 +300,32 @@ methods = {
 		wepy.navigateTo({url: 'cityList'})
 	},
 	goEvaluate () {
+		wx.setStorageSync('showEvaluatePanel', true)
 		this.showEvaluatePanel = true
 	},
 	async goResult () {
+		// 检验表单
+		this.titleBeRed = [0, 0, 0, 0, 0]
+		if (!this.currentCommunity) {
+			this.titleBeRed[0] = 1
+			return
+		}
+		if (!parseFloat(this.areaValue)) {
+			this.titleBeRed[1] = 1
+			return
+		}
+		if (!this.typeValue) {
+			this.titleBeRed[2] = 1
+			return
+		}
+		if (!this.orientationValue) {
+			this.titleBeRed[3] = 1
+			return
+		}
+		if (!this.storeyValue) {
+			this.titleBeRed[4] = 1
+			return
+		}
 		// 提交表单
 		const form = {}
 		form.city_id = this.currentCommunity.AreaCode
@@ -304,18 +338,23 @@ methods = {
 		form.uid = wepy.$instance.globalData.myUserInfo.uid
 		console.log(form)
 		const {data} = await wepy.request({
-			url: api['index/getHousePrice'],
+			url: api['getHousePrice'],
 			data: form
 		})
-		this.currentData = data
 		// 对数据进行格式处理
-		const newData = this.methods.dataController(this.currentData)
-		this.currentData.house_type = newData.house_type
-		this.currentData.unit_price = newData.unit_price
-		this.currentData.total_price = newData.total_price
-		this.currentData.acreage = newData.acreage
+		console.log('1', data)
+		const newData = await dataController(data)
+		console.log('2', newData)
+		this.currentData = newData
 		// 清空表单数据
+		this.typeValue = ''
+		this.areaValue = ''
+		this.orientationValue = ''
+		this.storeyValue = ''
+		this.currentCity = {}
+		wx.setStorageSync('showEvaluatePanel', false)
 		wepy.navigateTo({url: 'evaluateResult'})
+		this.$apply()
 	},
 	onTypeChange({detail: {value}}) {
 		this.typeValue = this.houseTypeArry[0][value[0]] + this.houseTypeArry[1][value[1]] + this.houseTypeArry[2][value[2]]
@@ -333,6 +372,7 @@ methods = {
 		}
 	},
 	onAreaChange ({detail: {value}}) {
+		if (!value) return
 		this.areaValue = value
 	},
 	goSearch() {

@@ -1,19 +1,19 @@
 const roots = {
 	prod: 'https://love.yylhealth.com/',
 	test: 'http://118.25.21.169:3338/',
-	dev: 'https://hd-api.dev.xiaoyu.com/index.php/fngj/'
+	dev: 'https://hd-api.dev.xiaoyu.com/index.php/wxapp/fngj/index/'
 }
 const apis = [
-	'login/getUserId',
-	'login/saveUser',
-	'user/getUserInfo',
-	'user/getEvaluationHistory',
-	'user/getCity',
-	'user/saveCity',
-	'index/getCommunityList',
-	'index/getHousePrice',
-	'index/addHouseInfo',
-	'index/getCityList'
+	'getUserId',
+	'saveUser',
+	'getUserInfo',
+	'getEvaluationHistory',
+	'getCommunityList',
+	'getHousePrice',
+	'addHouseInfo',
+	'sendCode',
+	'mobileLogin',
+	'addUserIntention'
 ]
 
 const env = 'dev' // dev: 本地测试服务器， prod：线上服务器, test：测试服务器

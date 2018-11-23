@@ -4,7 +4,8 @@
 	width: 100%;
 	height: 100%;
   	box-sizing: border-box;
-	align-items: flex-start;
+	align-items: center;
+
 	.item {
 		width: 100%;
 		margin-bottom: 30rpx;
@@ -27,7 +28,7 @@
 			display: flex;
 			flex-wrap:wrap;
 			input {
-				width: 576rpx;
+				width: 570rpx;
 				height: 70rpx;
 				padding: 0 20rpx;
 				background: #fff;
@@ -35,7 +36,7 @@
 				line-height: 70rpx;
 				border-radius: 5rpx;
 			}
-			.clear {
+			.icon {
 				width: 60rpx;
 				height: 70rpx;
 				background: #fff;
@@ -49,7 +50,7 @@
 				}
 			}
 			.box1 {
-				width: 196rpx;
+				width: 214rpx;
 				height: 70rpx;
 				background: #fff;
 				line-height: 70rpx;
@@ -90,21 +91,6 @@
 			}
 		}
 	}
-	.scroll {
-		width: 100%;
-		height: 100%;
-		box-sizing: border-box;
-	}
-	.scroll-side {
-		position: fixed;
-		right: 20rpx;
-		bottom: 10rpx;
-		border-radius: 10rpx;
-		text-align: center;
-		.side-item {
-			padding:7rpx 10rpx;
-		}
-	}
 }
 /* 无数据  */
 .nodata {
@@ -116,38 +102,26 @@
 </style>
 <template>
 <view class="container">
-		<scroll-view class="scroll" scroll-y="true" scroll-into-view="{{jumpNum}}" scroll-with-animation="true" bindscroll="onScrollChange">
-			<view class="item">
-				<view class="item-content">
-					<input placeholder="输入小区名称搜索" bindinput="onInputChange" value="{{searchText}}"/>
-					<view class="clear">
-						<image wx:if="{{isSearched}}" src="../images/clear.png" @tap="clearSearch"></image>
-					</view>
-				</view>
+	<view class="item">
+		<view class="item-content">
+			<view class="icon">
+				<image src="../images/search.png"></image>
 			</view>
-			<block wx:if="{{!isSearched}}">
-				<view class="item">
-					<view class="item-head">
-						<view class="title">最近小区</view>
-					</view>
-					<view class="item-content">
-						<view class="box1">软件园二期</view>
-						<view class="box1">明发园</view>
-					</view>
-				</view>
-			</block>
-			<block wx:else>
-				<view class="item" wx:if="{{communityList.length != 0}}">
-					<view class="item-head">
-						<view class="title">搜索结果</view>
-					</view>
-					<view class="item-content">
-						<view class="box1" wx:for="{{communityList}}" wx:key="index" @tap="setCommunityName({{item}})">{{item.Name}}</view>
-					</view>
-				</view>
-				<view wx:else class='nodata'>没有搜索到相关的数据哦</view>
-			</block>
-		</scroll-view>
+			<input placeholder="输入小区名称搜索" bindinput="onInputChange" value="{{searchText}}"/>
+			<view class="icon">
+				<image wx:if="{{isSearched}}" src="../images/clear.png" @tap="clearSearch"></image>
+			</view>
+		</view>
+	</view>
+	<view class="item" wx:if="{{communityList.length != 0}}">
+		<view class="item-head">
+			<view class="title">搜索结果</view>
+		</view>
+		<view class="item-content">
+			<view class="box1" wx:for="{{communityList}}" wx:key="index" @tap="setCommunityName({{item}})">{{item.Name}}</view>
+		</view>
+	</view>
+	<view wx:else class='nodata'>没有搜索到相关的数据哦</view>
 </view>
 </template>
 
@@ -166,7 +140,8 @@ export default class cityList extends wepy.page {
 		communityList: [],
 	}
 	onLoad() {
-		this.adCode = wx.getStorageSync('addressInfo').adcode
+		wx.setStorageSync('showEvaluatePanel', true)
+		this.adCode = wx.getStorageSync('locationInfo').code
 	}
 	methods = {
 		onInputChange: async ({detail: {value}}) => {
@@ -177,10 +152,10 @@ export default class cityList extends wepy.page {
 			this.searchText = value
 			this.isSearched = true
 			const {data} = await wepy.request({
-				url: api['index/getCommunityList'],
+				url: api['getCommunityList'],
 				data: {
 					community_name: '大',
-					AreaCode: '350200'
+					AreaCode: 350200
 				}
 			})
 			this.communityList = data

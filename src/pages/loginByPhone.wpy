@@ -67,7 +67,7 @@
 				<view class="remain" wx:else>重新获取（{{remainTime}}s）</view>
 			</view>
 			<view class="item">
-				<input placeholder="请输入验证码" bindinput="onCodeChange"></input>
+				<input type="number" placeholder="请输入验证码" bindinput="onCodeChange" value="{{codeNum}}"></input>
 			</view>
 			<view class="code"></view>
 			<view class="button" @tap="login">登录</view>
@@ -77,6 +77,7 @@
 
 <script>
 import wepy from 'wepy'
+import api from '../utils/api'
 export default class Index extends wepy.page {
 config = {
 	navigationBarTitleText: '房牛估价',
@@ -100,11 +101,17 @@ methods = {
 	close() {
 		wepy.redirectTo({url: 'index'})
 	},
-	getCode() {
+	async getCode() {
 		// 验证手机号
 		if (this.phoneNum && /^1[34578]\d{9}$/.test(this.phoneNum)) {
 			console.log('验证通过')
 			this.isGetingCode = true
+			await wepy.request({
+				url: api['sendCode'],
+				data: {
+					mobile: this.phoneNum
+				}
+			})
 			const timer = setInterval(() => {
 				if (this.remainTime <= 1) {
 					clearInterval(timer)
@@ -121,8 +128,41 @@ methods = {
 			})
 		}
 	},
-	login() {
+	async login() {
+		// 表单校验
+		if (!this.phoneNum) {
+			wx.showToast({
+				title: '请输入手机号',
+				icon: 'none'
+			})
+			return
+		}
+		if (!this.codeNum) {
+			wx.showToast({
+				title: '请输入验证码',
+				icon: 'none'
+			})
+			return
+		}
 		// 校验验证码
+		const res = await wepy.request({
+			url: api['mobileLogin'],
+			data: {
+				// uid: wepy.$instance.globalData.myUserInfo.uid
+				uid: 2,
+				mobile: this.phoneNum,
+				code: parseInt(this.codeNum)
+			}
+		})
+		if (res.code == 400) {
+			this.codeNum = ''
+			wx.showToast({
+				title: '验证码错误',
+				icon: 'none'
+			})
+			this.$apply()
+			return
+		}
 		wepy.redirectTo({url: 'loginSuccess'})
 	},
 	onPhoneChange ({detail: {value}}) {

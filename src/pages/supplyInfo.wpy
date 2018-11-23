@@ -146,7 +146,7 @@ methods = {
 	},
 	async submit() {
 		await wepy.request({
-			url: api['index/addHouseInfo'],
+			url: api['addHouseInfo'],
 			data: {
 				id: this.id,
 				buildingYear: this.buildingYear,

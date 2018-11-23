@@ -39,12 +39,12 @@ export default class extends wepy.app {
   config = {
 	pages: [
 		'pages/index',
+		'pages/searchCommunity',
+		'pages/loginByPhone',
 		'pages/cityList',
 		'pages/supplyInfo',
-		'pages/searchCommunity',
 		'pages/loginByAuthor',
 		'pages/evaluateResult',
-		'pages/loginByPhone',
 		'pages/loginSuccess',
 	],
 	window: {

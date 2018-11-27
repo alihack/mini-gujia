@@ -38,13 +38,13 @@ import 'wepy-async-function'
 export default class extends wepy.app {
   config = {
 	pages: [
+		'pages/evaluateResult',
 		'pages/index',
-		'pages/searchCommunity',
 		'pages/loginByPhone',
+		'pages/searchCommunity',
 		'pages/cityList',
 		'pages/supplyInfo',
 		'pages/loginByAuthor',
-		'pages/evaluateResult',
 		'pages/loginSuccess',
 	],
 	window: {

@@ -3,7 +3,7 @@
 	height: 100%;
 	background: #fff;
 	.panel {
-		padding: 0 30rpx;
+		padding: 70rpx 30rpx;
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
@@ -19,6 +19,7 @@
 		}
 		.title {
 			font-size: 21px;
+			padding-bottom: 70rpx;
 		}
 		.button {
 			margin-top:50rpx;
@@ -57,9 +58,6 @@
 <template>
 	<view class="container">
 		<view class="panel">
-			<view class="close" @tap="close">
-				<image src="../images/close.png"></image>
-			</view>
 			<view class="title">手机号快捷登录</view>
 			<view class="item">
 				<input type="number" placeholder="请输入手机号" bindinput="onPhoneChange"></input>
@@ -144,14 +142,15 @@ methods = {
 			})
 			return
 		}
+		console.log(typeof this.phoneNum)
+		console.log(typeof this.codeNum)
 		// 校验验证码
 		const res = await wepy.request({
 			url: api['mobileLogin'],
 			data: {
-				// uid: wepy.$instance.globalData.myUserInfo.uid
-				uid: 2,
+				uid: wepy.$instance.globalData.myUserInfo.uid,
 				mobile: this.phoneNum,
-				code: parseInt(this.codeNum)
+				code: this.codeNum
 			}
 		})
 		if (res.code == 400) {

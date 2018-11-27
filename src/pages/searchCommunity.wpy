@@ -144,23 +144,25 @@ export default class cityList extends wepy.page {
 		this.adCode = wx.getStorageSync('locationInfo').code
 	}
 	methods = {
-		onInputChange: async ({detail: {value}}) => {
+		onInputChange: ({detail: {value}}) => {
 			if (!value) {
 				this.isSearched = false
+				this.communityList = []
 				return
 			}
 			this.searchText = value
 			this.isSearched = true
-			const {data} = await wepy.request({
+			wepy.request({
 				url: api['getCommunityList'],
 				data: {
-					community_name: '大',
+					community_name: value,
 					AreaCode: 350200
 				}
+			}).then(({data}) => {
+				console.log(data)
+				this.communityList = data
 			})
-			this.communityList = data
 			this.$apply()
-			console.log(data)
 		},
 		clearSearch() {
 			this.isSearched = false

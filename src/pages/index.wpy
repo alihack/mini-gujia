@@ -131,10 +131,54 @@
 			margin-top:25rpx;
 			font-size: 12px;
 			color:#cecece;
+			text-align: center;
 		}
 	}
 	.animation {
 		animation: fadeUp 2s;
+	}
+	.authorModal {
+		position: absolute;
+		display: flex;
+		flex-direction: column;
+		width: 540rpx;
+		height: 440rpx;
+		top: 340rpx;
+		left: 100rpx;
+		z-index: 2000;
+		background: #FFFFFF;
+		border-radius: 20rpx;
+		padding: 20rpx 30rpx;
+		box-sizing: border-box;
+		&-main {
+			margin-top:20rpx;
+			font-size: 20px;
+			letter-spacing: 1rpx;
+			padding: 20rpx;
+			.txt {
+				font-weight: bold;
+			}
+			.tip {
+				font-size: 12px;
+				margin: 40rpx 0;
+			}
+			button {
+				width:100%;
+				margin-top:50rpx;
+			}
+		}
+	}
+	.author_screen {
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		top: 0;
+		left: 0;
+		background: #000;
+		opacity: 0.5;
+		overflow: hidden;
+		z-index: 1000;
+		color: #fff;
 	}
 }
 </style>
@@ -142,7 +186,7 @@
 	<view class="container">
 		<view class="location" @tap="chooseCity">
 			<image class="address" src="../images/address.png"/>
-			<view>{{currentCity.name}}</view>
+			<view>厦门</view>
 			<image class="triangle" src="../images/triangle.png"/>
 		</view>
 		<view class="title">{{showEvaluatePanel? '我的房子值多少钱' : '算算房子值多少钱'}}</view>
@@ -225,13 +269,23 @@
 				</view>
 			</view>
 		</view>
+		<!-- 模拟授权弹窗 -->
+		<view class="authorModal" wx:if="{{showAuthorModal}}">
+			<view class="authorModal-main">
+				<view class="txt">精确价格评估</view>
+				<view class="txt">买卖心中有数</view>
+				<view class="tip">房牛估价将对您的授权信息严格保密</view>
+				<button class="button" open-type="getUserInfo" @getuserinfo="getUserInfo">马上计算房屋价格</button>
+			</view>
+		</view>
+		<view class="author_screen" wx:if="{{showAuthorModal}}"></view>
 	</view>
 </template>
 
 <script>
 import wepy from 'wepy'
 import api from '../utils/api'
-import {getUserId, getUserInfo, getLocation, dataController} from '../utils/util'
+import {getUserId, getUserInfo, dataController} from '../utils/util'
 import {houseTypeArry, orientationArry, storeyArry} from '../utils/config'
 export default class Index extends wepy.page {
 config = {
@@ -243,6 +297,7 @@ components = {
 
 data = {
 	showEvaluatePanel: true,
+	showAuthorModal: false,
 	currentCommunity: {},
 	currentCity: {},
 	historyList: [],
@@ -261,13 +316,24 @@ data = {
 
 computed = {
 }
-async onShow() {
-	await getUserId()
+async refresh () {
+	const uid = await getUserId()
+	if (!uid) {
+		this.showAuthorModal = true
+		this.$apply()
+		return
+	}
+	this.showAuthorModal = false
 	await getUserInfo()
 	await this.methods.getEvaluationHistory()
-	await getLocation()
-	this.currentCity = wx.getStorageSync('locationInfo')
+	this.$apply()
+	// await getLocation()
+	// this.currentCity = wx.getStorageSync('locationInfo')
+}
+async onShow() {
+	this.refresh()
 	this.currentCommunity = wx.getStorageSync('currentCommunity')
+	wx.removeStorageSync('currentCommunity')
 	this.$apply()
 }
 methods = {
@@ -297,6 +363,11 @@ methods = {
 		})
 	},
 	chooseCity() {
+		wx.showToast({
+			title: '当前只支持厦门地区',
+			icon: 'none'
+		})
+		return
 		wepy.navigateTo({url: 'cityList'})
 	},
 	goEvaluate () {
@@ -337,14 +408,16 @@ methods = {
 		form.storey = this.storeyValue + this.allStorey
 		form.uid = wepy.$instance.globalData.myUserInfo.uid
 		console.log(form)
+		wx.showLoading({
+			title: '估算中',
+		})
 		const {data} = await wepy.request({
 			url: api['getHousePrice'],
 			data: form
 		})
+		wx.hideLoading()
 		// 对数据进行格式处理
-		console.log('1', data)
 		const newData = await dataController(data)
-		console.log('2', newData)
 		this.currentData = newData
 		// 清空表单数据
 		this.typeValue = ''
@@ -363,7 +436,6 @@ methods = {
 		this.orientationValue = this.orientationArry[value]
 	},
 	onStoreyChange({detail: {value}}) {
-		console.log(value)
 		this.allStorey = this.storeyArry[1][value[1]]
 		if (value[0] >= value[1]) {
 			this.storeyValue = this.storeyArry[0][value[1]]
@@ -379,9 +451,28 @@ methods = {
 		wepy.navigateTo({url: 'searchCommunity'})
 	},
 	goDeatil(index) {
-		console.log(index)
 		this.currentData = this.historyList[index]
 		wepy.navigateTo({url: 'evaluateResult'})
+	},
+	getUserInfo({detail}) {
+		if (detail.iv) {
+			wx.login({
+				success: async (res) => {
+					if (res.code) {
+						await wepy.request({
+							url: api['saveUser'],
+							data: {
+								code: res.code,
+								encryptedData: detail.encryptedData,
+								iv: detail.iv
+							}
+						})
+					} else {
+						console.log('登录失败！' + res.errMsg)
+					}
+				}
+			})
+		}
 	}
 }
 

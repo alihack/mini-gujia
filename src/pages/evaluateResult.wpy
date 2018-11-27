@@ -16,6 +16,7 @@
 			text-align: center;
 			.text {
 				display: inline-block;
+				padding-left:70rpx;
 			}
 			.share {
 				display: inline-block;
@@ -63,6 +64,16 @@
 		.title {
 			font-size: 18px;
 		}
+		.canvas1 {
+			width: 100%;
+			height: 100%;
+		}
+		.canvas2 {
+			.canvas1;
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
 	}
 	.footer {
 		width: 100%;
@@ -73,17 +84,19 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		.button {
+			margin-top:30rpx;
+		}
 		.title {
 			font-size: 18px;
-			width:92%;
+			margin-bottom: 30rpx;
+			width: 100%;
 		}
 		.box {
 			border:2rpx solid #eaeaea;
-			border-radius: 10rpx;
 			width: 690rpx;
 			min-height: 150rpx;
 			box-sizing: border-box;
-			margin:30rpx 0;
 			padding: 25rpx 20rpx;
 			display: flex;
 			align-items: center;
@@ -121,38 +134,50 @@
 				</view>
 				<view class="detail-center">
 					<view class="title">环比上月变化</view>
-					<view class="count">上涨0.1%</view>
+					<view class="count">上涨 20%</view>
 				</view>
 				<view class="detail-right">
 					<view class="title">估值参考范围</view>
 					<view class="count">577万~639万</view>
 				</view>
 			</view>
-			<button class="button" @tap="getPhone">订阅楼盘价格波动</button>
-			<!-- <button class="button" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber">订阅楼盘价格波动</button> -->
+			<button class="button" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber('mark')">订阅楼盘价格波动</button>
 		</view>
 		<view class="main">
 			<view class="title">该楼盘历史均价走势图</view>
-			<view class="canvas"></view>
+			<!-- <canvas class ="canvas" canvas-id="myCanvas"></canvas> -->
+			<canvas class ="canvas1" canvas-id="myCanvas1" bindtouchstart="touchCanvas">
+				<canvas class ="canvas2" canvas-id="myCanvas2"></canvas>
+			</canvas>
 		</view>
 		<view class="footer">
 			<view class="title">房源分析</view>
 			<view class="box">
 				<view class="box-left">
-					<view class="room">{{currentData.house_type}}</view>
-					<view class="area">{{currentData.acreage}}m<text class="sup-text">2</text></view>
+					<view class="room">{{currentData.sourceAnalyze[0].txt1}}</view>
+					<view class="area">{{currentData.sourceAnalyze[0].txt2}}<text class="sup-text">2</text></view>
 				</view>
 				<view class="box-right">
-					<text>{{currentData.sourceAnalyze}}</text>
+					<text>{{currentData.sourceAnalyze[0].content}}</text>
 				</view>
 			</view>
-			<button class="button" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber">登录查看更多房源分析</button>
+			<view wx:if="{{hasPhone && index != 0}}" class="box" wx:for="{{currentData.sourceAnalyze}}" wx:key="index">
+				<view class="box-left">
+					<view class="room">{{item.txt1}}</view>
+					<view class="area">{{item.txt2}}</view>
+				</view>
+				<view class="box-right">
+					<text>{{item.content}}</text>
+				</view>
+			</view>
+			<button wx:if="{{!hasPhone}}" class="button" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber('source')">登录查看更多房源分析</button>
 		</view>
 	</view>
 </template>
 
 <script>
 import wepy from 'wepy'
+import api from '../utils/api'
 export default class Index extends wepy.page {
 config = {
 	navigationBarTitleText: '房牛估价',
@@ -163,27 +188,164 @@ components = {
 }
 
 data = {
-	currentData: {}
+	currentData: {},
+	hasPhone: false,
+	coordArry: [],
+	historyData: [
+		{
+			month: '7月',
+			price: '28714'
+		},
+		{
+			month: '8月',
+			price: '23003'
+		},
+		{
+			month: '9月',
+			price: '24618'
+		},
+		{
+			month: '10月',
+			price: '23586'
+		},
+		{
+			month: '11月',
+			price: '15425'
+		},
+		{
+			month: '12月',
+			price: '18879.5'
+		}
+	]
 }
 
 computed = {
 }
-onLoad() {
+async onLoad() {
+	this.methods.drawCanvas()
 	// 获取前一页面数据
-	const pages = getCurrentPages()
-	const prevPage = pages[pages.length - 2]
-	this.currentData = prevPage.data.currentData
+	// const pages = getCurrentPages()
+	// const prevPage = pages[pages.length - 2]
+	// this.currentData = prevPage.data.currentData
+	// if (wepy.$instance.globalData.myUserInfo.mobile) this.hasPhone = true
 }
 methods = {
 	goSupply () {
 		wepy.navigateTo({url: `supplyInfo?id=${this.currentData.id}`})
 	},
-	getPhoneNumber (e) {
-		console.log(e)
-		wx.reLaunch({url: 'loginByPhone'})
+	async getPhoneNumber (type, {detail}) {
+		console.log(detail)
+		if (!detail.iv) {
+			console.log('用户取消授权')
+			wx.navigateTo({url: 'loginByPhone'})
+			return
+		}
+		const res = await wepy.request({
+			url: api['getUserMobile'],
+			data: {
+				uid: wepy.$instance.globalData.myUserInfo.uid,
+				encryptedData: detail.encryptedData,
+				iv: detail.iv
+			}
+		})
+		if (res.code != 400) {
+			this.hasPhone = true
+			if (type == 'mark')	wx.showToast({title: '订阅成功'})
+			if (type == 'source') wx.showToast({title: '登录成功'})
+		} else {
+			wx.showToast({
+				title: '请求失败',
+				icon: 'none'
+			})
+		}
+		this.$apply()
 	},
-	getPhone () {
-		wepy.navigateTo({url: 'loginByPhone'})
+	touchCanvas({changedTouches}) {
+		console.log(changedTouches[0])
+		const coord = changedTouches[0]
+		const ctx = wx.createCanvasContext('myCanvas2')
+		const ratio = wx.getSystemInfoSync().windowWidth / 375
+		ctx.clearRect(0, 0, 382 * ratio, 227 * ratio)
+		const result = this.coordArry.filter(ele => {
+			if ((coord.y >= ele.y - 20) && (coord.y <= ele.y + 20) && (coord.x >= ele.x - 20) && (coord.x <= ele.x + 20)) {
+				return ele
+			}
+		})[0]
+		if (!result) return
+		console.log(result)
+		ctx.moveTo(38 * ratio, result.y)
+		ctx.lineTo(340 * ratio, result.y)
+		ctx.moveTo(result.x, 30 * ratio)
+		ctx.lineTo(result.x, 150 * ratio)
+		ctx.fillText(`${result.price}`, result.x + 10, result.y - 10)
+		ctx.stroke()
+		ctx.draw()
+	},
+	drawCanvas: () => {
+		console.log('draw')
+		// 适配机型
+		const ratio = wx.getSystemInfoSync().windowWidth / 375
+		// 取价格最大值及最小值
+		const priceArry = []
+		this.historyData.forEach((ele) => {
+			priceArry.push(ele.price)
+		})
+		priceArry.sort()
+		const minPrice = priceArry[0]
+		const maxPrice = priceArry[priceArry.length - 1]
+		// 将价格最高及最低分成4段
+		const sectionPrice = (maxPrice - minPrice) / 4
+		const ctx = wx.createCanvasContext('myCanvas1')
+		ctx.save()
+		// 绘制X轴实线及月份
+		ctx.beginPath()
+		ctx.setFillStyle('#cccccc')
+		ctx.setStrokeStyle('#cccccc')
+		ctx.moveTo(38 * ratio, 150 * ratio)
+		ctx.lineTo(340 * ratio, 150 * ratio)
+		this.historyData.forEach((ele, index) => {
+			ctx.fillText(ele.month, (40 + index * 55) * ratio, 170 * ratio)
+		})
+		ctx.stroke()
+		// 绘制X轴虚线
+		ctx.beginPath()
+		ctx.stroke()
+		ctx.setLineDash([4, 1])
+		for (let i = 0; i <= 3; i++) {
+			ctx.moveTo(38 * ratio, (30 + 30 * i) * ratio)
+			ctx.lineTo(340 * ratio, (30 + 30 * i) * ratio)
+		}
+		ctx.stroke()
+		// Y轴文字
+		ctx.fillText('单位：元', 0, 13 * ratio)
+		for (let i = 0; i <= 4; i++) {
+			ctx.fillText(`${parseInt(maxPrice - sectionPrice * i)}`, 0, (34 + 30 * i) * ratio)
+		}
+		// 绘制小圆点并连线
+		ctx.restore()
+			// 计算价格坐标
+		const pxPrice = sectionPrice / 30   // 1px的价格
+		const coordArry = []
+		this.historyData.forEach((ele, index) => {
+			coordArry.push({x: (50 + index * 55) * ratio, y: ((maxPrice - ele.price) / pxPrice + 30) * ratio, price: ele.price})
+		})
+		this.coordArry = coordArry
+		console.log('坐标', coordArry)
+		ctx.setFillStyle('#6db6ff')
+		coordArry.forEach(ele => {
+			ctx.beginPath()
+			ctx.arc(ele.x, ele.y, 2, 0, 2 * Math.PI)
+			ctx.fill()
+		})
+		ctx.beginPath()
+		for (let i = 0; i < coordArry.length - 1; i++) {
+			ctx.moveTo(coordArry[i].x, coordArry[i].y)
+			ctx.lineTo(coordArry[i + 1].x, coordArry[i + 1].y)
+		}
+		ctx.setStrokeStyle('#6db6ff')
+		ctx.stroke()
+		ctx.draw()
+		this.$apply()
 	}
 }
 

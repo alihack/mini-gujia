@@ -38,17 +38,18 @@ import 'wepy-async-function'
 export default class extends wepy.app {
   config = {
 	pages: [
-		'pages/evaluateResult',
 		'pages/index',
+		'pages/loginSuccess',
 		'pages/loginByPhone',
+		'pages/evaluateResult',
 		'pages/searchCommunity',
 		'pages/cityList',
 		'pages/supplyInfo',
 		'pages/loginByAuthor',
-		'pages/loginSuccess',
 	],
 	window: {
 		backgroundTextStyle: 'light',
+		enablePullDownRefresh: true,
 		navigationBarBackgroundColor: '#fff',
 		navigationBarTitleText: 'WeChat',
 		navigationBarTextStyle: 'black'

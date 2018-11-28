@@ -23,8 +23,8 @@
 				float: right;
 				border:none;
 				image {
-					width: 50rpx;
-					height: 50rpx;
+					width: 40rpx;
+					height: 40rpx;
 				}
 			}
 		}
@@ -34,12 +34,16 @@
 			}
 		}
 		.supply {
-			width: 480rpx;
-			height: 60rpx;
-			border-radius: 40rpx;
-			background: #5dacff;
-			line-height: 60rpx;
 			text-align: center;
+			font-size: 13px;
+			margin-bottom: 30rpx;
+			image {
+				width:38rpx;
+				height: 38rpx;
+				vertical-align: text-bottom;
+				margin-left: 10rpx;
+				padding-bottom: 5rpx;
+			}
 		}
 		.detail {
 			display: flex;
@@ -53,6 +57,9 @@
 				border-right:1px solid #fff;
 				padding:0 30rpx 0 30rpx;
 			}
+		}
+		.button {
+			border:1rpx solid #fff;
 		}
 	}
 	.main {
@@ -113,6 +120,20 @@
 			}
 		}
 	}
+	.tips {
+		display: flex;
+		width: 690rpx;
+		justify-content: space-between;
+		margin-top:30rpx;
+		margin-bottom: 50rpx;
+		font-size: 13px;
+		color:#cecece;
+		.border {
+			width: 240rpx;
+			height: 18rpx;
+			border-bottom: 1px solid #e5e5e5;
+		}
+	}
 }
 </style>
 <template>
@@ -126,7 +147,7 @@
 				<text class="number">{{currentData.total_price}}</text>
 				<text class="unit">万</text>
 			</view>
-			<view class="supply" @tap="goSupply">点击补充楼房信息 估值更精准</view>
+			<view class="supply" @tap="goSupply"><text>点击补充楼房信息 估值更精准</text><image src="../images/write.png"></image></view>
 			<view class="detail">
 				<view class="detail-left">
 					<view class="title">房屋均价</view>
@@ -172,6 +193,11 @@
 			</view>
 			<button wx:if="{{!hasPhone}}" class="button" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber('source')">登录查看更多房源分析</button>
 		</view>
+		<view class="tips">
+			<view class="border"></view>
+			<text>我是有底线的</text>
+			<view class="border"></view>
+		</view>
 	</view>
 </template>
 
@@ -182,7 +208,8 @@ export default class Index extends wepy.page {
 config = {
 	navigationBarTitleText: '房牛估价',
 	navigationBarBackgroundColor: '#2d8cf0',
-	navigationBarTextStyle: 'white'
+	navigationBarTextStyle: 'white',
+	backgroundColor: '#2d8cf0',
 }
 components = {
 }
@@ -214,22 +241,37 @@ data = {
 		},
 		{
 			month: '12月',
-			price: '18879.5'
+			price: '18879'
 		}
 	]
 }
 
 computed = {
 }
+onPullDownRefresh () {
+    wx.stopPullDownRefresh()
+}
 async onLoad() {
-	this.methods.drawCanvas()
 	// 获取前一页面数据
-	// const pages = getCurrentPages()
-	// const prevPage = pages[pages.length - 2]
-	// this.currentData = prevPage.data.currentData
-	// if (wepy.$instance.globalData.myUserInfo.mobile) this.hasPhone = true
+	const pages = getCurrentPages()
+	const prevPage = pages[pages.length - 2]
+	this.currentData = prevPage.data.currentData
+	if (wepy.$instance.globalData.myUserInfo.mobile) this.hasPhone = true
+	this.methods.getTrend()
+	this.methods.drawCanvas()
 }
 methods = {
+	getTrend: async () => {
+		const res = await wepy.request({
+			url: api['getTrend'],
+			data: {
+				city_id: this.currentData.city_id,
+				project_id: this.currentData.project_id,
+				unit_price: this.currentData.unit_price
+			}
+		})
+		console.log(res)
+	},
 	goSupply () {
 		wepy.navigateTo({url: `supplyInfo?id=${this.currentData.id}`})
 	},
@@ -251,7 +293,9 @@ methods = {
 		if (res.code != 400) {
 			this.hasPhone = true
 			if (type == 'mark')	wx.showToast({title: '订阅成功'})
-			if (type == 'source') wx.showToast({title: '登录成功'})
+			if (type == 'source') {
+				wepy.navigateTo({url: 'loginSuccess'})
+			}
 		} else {
 			wx.showToast({
 				title: '请求失败',
@@ -266,19 +310,24 @@ methods = {
 		const ctx = wx.createCanvasContext('myCanvas2')
 		const ratio = wx.getSystemInfoSync().windowWidth / 375
 		ctx.clearRect(0, 0, 382 * ratio, 227 * ratio)
-		const result = this.coordArry.filter(ele => {
+		let isFirst = false
+		let result = {}
+		this.coordArry.map((ele, index) => {
 			if ((coord.y >= ele.y - 20) && (coord.y <= ele.y + 20) && (coord.x >= ele.x - 20) && (coord.x <= ele.x + 20)) {
-				return ele
+				if (index == 0) isFirst = true
+				result = ele
 			}
-		})[0]
-		if (!result) return
+		})
+		if (!result.x) return
 		console.log(result)
-		ctx.moveTo(38 * ratio, result.y)
-		ctx.lineTo(340 * ratio, result.y)
-		ctx.moveTo(result.x, 30 * ratio)
-		ctx.lineTo(result.x, 150 * ratio)
-		ctx.fillText(`${result.price}`, result.x + 10, result.y - 10)
-		ctx.stroke()
+		ctx.setFillStyle('#6db6ff')
+		ctx.arc(result.x, result.y, 4, 0, 2 * Math.PI)
+		if (isFirst) {
+			ctx.fillText(`${result.price}`, result.x + 5, result.y - 5)
+		} else {
+			ctx.fillText(`${result.price}`, result.x - 20, result.y - 5)
+		}
+		ctx.fill()
 		ctx.draw()
 	},
 	drawCanvas: () => {
@@ -317,6 +366,7 @@ methods = {
 		}
 		ctx.stroke()
 		// Y轴文字
+		ctx.setFontSize(12)
 		ctx.fillText('单位：元', 0, 13 * ratio)
 		for (let i = 0; i <= 4; i++) {
 			ctx.fillText(`${parseInt(maxPrice - sectionPrice * i)}`, 0, (34 + 30 * i) * ratio)
@@ -345,6 +395,14 @@ methods = {
 		ctx.setStrokeStyle('#6db6ff')
 		ctx.stroke()
 		ctx.draw()
+		// 默认最后一个为点击状态
+		const ctx2 = wx.createCanvasContext('myCanvas2')
+		const lastCoord = coordArry[coordArry.length - 1]
+		ctx2.arc(lastCoord.x, lastCoord.y, 4, 0, 2 * Math.PI)
+		ctx2.setFillStyle('#6db6ff')
+		ctx2.fillText(lastCoord.price, lastCoord.x - 20, lastCoord.y - 5)
+		ctx2.fill()
+		ctx2.draw()
 		this.$apply()
 	}
 }

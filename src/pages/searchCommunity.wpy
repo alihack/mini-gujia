@@ -49,6 +49,16 @@
 					padding:15rpx;
 				}
 			}
+			.icon1 {
+				.icon;
+				border-top-left-radius: 20rpx;
+				border-bottom-left-radius: 20rpx;
+			}
+			.icon2 {
+				.icon;
+				border-top-right-radius: 20rpx;
+				border-bottom-right-radius: 20rpx;
+			}
 			.box1 {
 				width: 214rpx;
 				height: 70rpx;
@@ -104,11 +114,11 @@
 <view class="container">
 	<view class="item">
 		<view class="item-content">
-			<view class="icon">
+			<view class="icon1">
 				<image src="../images/search.png"></image>
 			</view>
 			<input placeholder="输入小区名称搜索" bindinput="onInputChange" value="{{searchText}}"/>
-			<view class="icon">
+			<view class="icon2">
 				<image wx:if="{{isSearched}}" src="../images/clear.png" @tap="clearSearch"></image>
 			</view>
 		</view>
@@ -140,7 +150,6 @@ export default class cityList extends wepy.page {
 		communityList: [],
 	}
 	onLoad() {
-		wx.setStorageSync('showEvaluatePanel', true)
 		this.adCode = wx.getStorageSync('locationInfo').code
 	}
 	methods = {
@@ -161,8 +170,8 @@ export default class cityList extends wepy.page {
 			}).then(({data}) => {
 				console.log(data)
 				this.communityList = data
+				this.$apply()
 			})
-			this.$apply()
 		},
 		clearSearch() {
 			this.isSearched = false

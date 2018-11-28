@@ -28,14 +28,15 @@
 		<view class="panel">
 			<view class="title">登录成功</view>
 			<view class="tips">请选择估价的目的，获取更精准的服务</view>
-			<view class="button" @tap="goEvaluate">算算我家值多少钱</view>
-			<view class="button" @tap="goEvaluate">单纯对该楼盘感兴趣</view>
+			<view class="button" @tap="addUserIntention('2')">算算我家值多少钱</view>
+			<view class="button" @tap="addUserIntention('1')">单纯对该楼盘感兴趣</view>
 		</view>
 	</view>
 </template>
 
 <script>
 import wepy from 'wepy'
+import api from '../utils/api'
 export default class Index extends wepy.page {
 config = {
 	navigationBarTitleText: '房牛估价',
@@ -53,15 +54,15 @@ computed = {
 onLoad() {
 }
 methods = {
-	goResult() {
-		wepy.navigateTo({url: 'evaluateResult'})
-	},
-	onPickerChange ({detail: {value}}) {
-		console.log(value)
-		this.houseTime = value
-	},
-	goEvaluate() {
-		wepy.redirectTo({url: 'evaluate'})
+	async addUserIntention(type) {
+		await wepy.request({
+			url: api['addUserIntention'],
+			data: {
+				uid: wepy.$instance.globalData.myUserInfo.uid,
+				intention: type
+			}
+		})
+		wepy.navigateBack()
 	}
 }
 

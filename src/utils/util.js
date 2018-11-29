@@ -42,8 +42,8 @@ const getUserInfo = () => {
 		console.log('调用getUserInfo方法')
 		const uid = wx.getStorageSync('uid')
 		// 有myUserInfo则不重新获取
-		if (wepy.$instance.globalData.myUserInfo || !uid) {
-			console.log('有myUserInfo或没有uid不重新获取')
+		if (!uid) {
+			console.log('没有uid不重新获取UserInfo')
 			resolve()
 			return
 		}

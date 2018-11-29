@@ -206,7 +206,7 @@
 					<view class="cell-head">
 							<view class="cell-head-title {{titleBeRed[1] ? 'red' : ''}}">面积</view>
 							<view class="cell-head-content">
-								<input placeholder="请输入" bindinput="onAreaChange" value="{{areaValue}}" type="number"/>
+								<input placeholder="请输入"  bindblur="onAreaBlur" value="{{areaValue}}" type="number"/>
 							</view>
 						</view>
 					<view><text>m</text><text class="sup-text">2</text></test></view>
@@ -337,6 +337,7 @@ async refresh () {
 async onShow() {
 	this.refresh()
 	this.currentCommunity = wx.getStorageSync('currentCommunity')
+	if (this.currentCommunity) this.titleBeRed[0] = 0
 	wx.removeStorageSync('currentCommunity')
 	this.$apply()
 }
@@ -425,20 +426,27 @@ methods = {
 	},
 	onTypeChange({detail: {value}}) {
 		this.typeValue = this.houseTypeArry[0][value[0]] + this.houseTypeArry[1][value[1]] + this.houseTypeArry[2][value[2]]
+		this.titleBeRed[2] = 0
 	},
 	onOrientationChange({detail: {value}}) {
 		this.orientationValue = this.orientationArry[value]
+		this.titleBeRed[3] = 0
 	},
 	onStoreyChange({detail: {value}}) {
 		this.allStorey = this.storeyArry[1][value[1]]
+		this.titleBeRed[4] = 0
 		if (value[0] >= value[1]) {
 			this.storeyValue = this.storeyArry[0][value[1]]
 		} else {
 			this.storeyValue = this.storeyArry[0][value[0]]
 		}
 	},
-	onAreaChange ({detail: {value}}) {
-		if (!value) return
+	onAreaBlur ({detail: {value}}) {
+		if (!value) {
+			this.areaValue = ''
+			return
+		}
+		this.titleBeRed[1] = 0
 		this.areaValue = value
 	},
 	goSearch() {

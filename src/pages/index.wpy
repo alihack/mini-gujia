@@ -119,6 +119,7 @@
 				&-content {
 					margin-left:30rpx;
 					input {
+						width: 500rpx;
 					}
 				}
 			}
@@ -137,7 +138,10 @@
 			text-align: center;
 		}
 	}
-	.animation {
+	.animation-1s {
+		animation: fadeUp 1s;
+	}
+	.animation-2s {
 		animation: fadeUp 2s;
 	}
 	.authorModal {
@@ -193,7 +197,7 @@
 			<image class="triangle" src="../images/triangle.png"/>
 		</view>
 		<view class="title">算算房子值多少钱</view>
-		<view class="animation">
+		<view class="animation-2s">
 			<view class="panel">
 				<view class="cell noborder" @tap="goSearch">
 						<view class="cell-head">
@@ -243,7 +247,7 @@
 			<view class="panel-tips">估价结果基于海量真实房源交易数据得出</view>
 		</view>
 		<!-- 有估价历史 -->
-		<view class="animation" wx:if="{{historyList.length != 0}}">
+		<view class="animation-2s" wx:if="{{historyList.length != 0}}">
 			<view class="tips">
 				<view class="border"></view>
 				<text>我的估价历史</text>
@@ -265,13 +269,14 @@
 					<image class="arrow" src="../images/next.png"/>
 				</view>
 				<view class="box-foot">
-					<view class="text">环比上个月下跌1.2%</view>
-					<image class="icon" src="../images/decline.png"></image>
+					<view class="text" wx:if="{{item.ratio}}">{{item.ratio}}</view>
+					<view class="text" wx:else>暂无环比</view>
+					<image class="icon" src="{{item.ratioIconSrc}}"></image>
 				</view>
 			</view>
 		</view>
 		<!-- 模拟授权弹窗 -->
-		<view class="authorModal" wx:if="{{showAuthorModal}}">
+		<view class="authorModal animation-1s" wx:if="{{showAuthorModal}}">
 			<view class="authorModal-main">
 				<view class="txt">精确价格评估</view>
 				<view class="txt">买卖心中有数</view>
@@ -412,8 +417,16 @@ methods = {
 			data: form
 		})
 		wx.hideLoading()
+		if (!data.unit_price) {
+			wx.showToast({
+				title: '该小区暂无估价',
+				icon: 'none'
+			})
+			return
+		}
 		// 对数据进行格式处理
 		const newData = await dataController(data)
+		newData.subscribe = '0'
 		this.currentData = newData
 		// 清空表单数据
 		this.typeValue = ''
@@ -461,6 +474,7 @@ methods = {
 			wx.login({
 				success: async (res) => {
 					if (res.code) {
+						wx.showLoading({title: '授权中'})
 						await wepy.request({
 							url: api['saveUser'],
 							data: {
@@ -469,6 +483,9 @@ methods = {
 								iv: detail.iv
 							}
 						})
+						wx.hideLoading()
+						this.showAuthorModal = false
+						this.$apply()
 						this.refresh()
 					} else {
 						console.log('登录失败！' + res.errMsg)

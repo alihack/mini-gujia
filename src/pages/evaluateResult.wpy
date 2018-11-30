@@ -68,6 +68,20 @@
 		box-sizing: border-box;
 		padding:25rpx 30rpx;
 		background: #fff;
+		.no-data {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			margin-top:90rpx;
+			image {
+				width:100rpx;
+				height: 100rpx;
+			}
+			text {
+				margin-top:20rpx;
+				color: #8a8a8a
+			}
+		}
 		.title {
 			font-size: 18px;
 		}
@@ -150,26 +164,32 @@
 			<view class="supply" @tap="goSupply"><text>点击补充楼房信息 估值更精准</text><image src="../images/write.png"></image></view>
 			<view class="detail">
 				<view class="detail-left">
-					<view class="title">房屋均价</view>
+					<view class="title">房屋评估单价</view>
 					<view class="count">{{currentData.unit_price}}元 /m<text class="sup-text">2</text></view>
 				</view>
 				<view class="detail-center">
 					<view class="title">环比上月变化</view>
-					<view class="count">上涨 20%</view>
+					<view class="count" wx:if="{{currentData.ratio}}">{{currentData.ratio}}</view>
+					<view class="count" wx:else>暂无环比</view>
 				</view>
 				<view class="detail-right">
 					<view class="title">估值参考范围</view>
-					<view class="count">577万~639万</view>
+					<view class="count">{{currentData.price_range}}</view>
 				</view>
 			</view>
-			<button class="button" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber('mark')">订阅楼盘价格波动</button>
+			<button class="button" wx:if="{{currentData.subscribe == '1'}}">已订阅楼盘价格波动</button>
+			<button class="button" wx:elif="{{currentData.subscribe == '0' && hasPhone}}" @tap="toSubscirbe">订阅楼盘价格波动</button>
+			<button class="button" wx:else open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber('mark')">订阅楼盘价格波动</button>
 		</view>
 		<view class="main">
 			<view class="title">该楼盘历史均价走势图</view>
-			<!-- <canvas class ="canvas" canvas-id="myCanvas"></canvas> -->
-			<canvas class ="canvas1" canvas-id="myCanvas1" bindtouchstart="touchCanvas">
+			<canvas wx:if="{{currentData.historyData}}" class ="canvas1" canvas-id="myCanvas1" bindtouchstart="touchCanvas">
 				<canvas class ="canvas2" canvas-id="myCanvas2"></canvas>
 			</canvas>
+			<view class="no-data" wx:else>
+				<image src="../images/no-data.png"></image>
+				<text>暂无历史走势</text>
+			</view>
 		</view>
 		<view class="footer">
 			<view class="title">房源分析</view>
@@ -204,6 +224,7 @@
 <script>
 import wepy from 'wepy'
 import api from '../utils/api'
+import {getUserInfo} from '../utils/util'
 export default class Index extends wepy.page {
 config = {
 	navigationBarTitleText: '房牛估价',
@@ -218,32 +239,6 @@ data = {
 	currentData: {},
 	hasPhone: false,
 	coordArry: [],
-	historyData: [
-		{
-			month: '7月',
-			price: '28714'
-		},
-		{
-			month: '8月',
-			price: '23003'
-		},
-		{
-			month: '9月',
-			price: '24618'
-		},
-		{
-			month: '10月',
-			price: '23586'
-		},
-		{
-			month: '11月',
-			price: '15425'
-		},
-		{
-			month: '12月',
-			price: '18879'
-		}
-	]
 }
 
 computed = {
@@ -256,21 +251,41 @@ async onLoad() {
 	const pages = getCurrentPages()
 	const prevPage = pages[pages.length - 2]
 	this.currentData = prevPage.data.currentData
+	await this.methods.getTrend()
+}
+onShow() {
 	if (wepy.$instance.globalData.myUserInfo.mobile) this.hasPhone = true
-	this.methods.getTrend()
-	this.methods.drawCanvas()
+	if (wx.getStorageSync('isSubscribe')) this.currentData.subscribe = '1'
+	wx.removeStorageSync('isSubscribe')
+	this.$apply()
 }
 methods = {
 	getTrend: async () => {
-		const res = await wepy.request({
-			url: api['getTrend'],
-			data: {
-				city_id: this.currentData.city_id,
-				project_id: this.currentData.project_id,
-				unit_price: this.currentData.unit_price
+		return new Promise(async resolve => {
+			const {data} = await wepy.request({
+				url: api['getTrend'],
+				data: {
+					city_id: this.currentData.city_id,
+					project_id: this.currentData.project_id,
+					unit_price: this.currentData.unit_price,
+					total_price: this.currentData.total_price,
+					property_type_code: this.currentData.property_type_code
+				}
+			})
+			if (data.ratio) {
+				this.currentData.ratio = data.ratio
+				data.DataList.forEach(ele => {
+					ele.AppraiseTime = ele.AppraiseTime.slice(ele.AppraiseTime.length - 2)
+					if (ele.AppraiseTime[0] == '0') ele.AppraiseTime = ele.AppraiseTime.slice(1)
+					ele.AppraiseTime += '月'
+					ele.Price = parseInt(ele.Price)
+				})
+				this.currentData.historyData = data.DataList
+				this.methods.drawCanvas()
 			}
+			resolve()
+			this.$apply()
 		})
-		console.log(res)
 	},
 	goSupply () {
 		wepy.navigateTo({url: `supplyInfo?id=${this.currentData.id}`})
@@ -279,7 +294,7 @@ methods = {
 		console.log(detail)
 		if (!detail.iv) {
 			console.log('用户取消授权')
-			wx.navigateTo({url: 'loginByPhone'})
+			wx.navigateTo({url: `loginByPhone?type=${type}`})
 			return
 		}
 		const res = await wepy.request({
@@ -291,10 +306,12 @@ methods = {
 			}
 		})
 		if (res.code != 400) {
-			this.hasPhone = true
-			if (type == 'mark')	wx.showToast({title: '订阅成功'})
-			if (type == 'source') {
-				wepy.navigateTo({url: 'loginSuccess'})
+			if (type == 'mark') {
+				this.methods.toSubscirbe()
+			} else {
+				wx.showToast({title: '登录成功'})
+				this.hasPhone = true
+				await getUserInfo()
 			}
 		} else {
 			wx.showToast({
@@ -325,7 +342,7 @@ methods = {
 		if (isFirst) {
 			ctx.fillText(`${result.price}`, result.x + 5, result.y - 5)
 		} else {
-			ctx.fillText(`${result.price}`, result.x - 20, result.y - 5)
+			ctx.fillText(`${result.price}`, result.x - 15, result.y - 8)
 		}
 		ctx.fill()
 		ctx.draw()
@@ -336,8 +353,10 @@ methods = {
 		const ratio = wx.getSystemInfoSync().windowWidth / 375
 		// 取价格最大值及最小值
 		const priceArry = []
-		this.historyData.forEach((ele) => {
-			priceArry.push(ele.price)
+		const historyData = this.currentData.historyData
+		console.log(historyData)
+		historyData.forEach((ele) => {
+			priceArry.push(ele.Price)
 		})
 		priceArry.sort()
 		const minPrice = priceArry[0]
@@ -352,8 +371,8 @@ methods = {
 		ctx.setStrokeStyle('#cccccc')
 		ctx.moveTo(38 * ratio, 150 * ratio)
 		ctx.lineTo(340 * ratio, 150 * ratio)
-		this.historyData.forEach((ele, index) => {
-			ctx.fillText(ele.month, (40 + index * 55) * ratio, 170 * ratio)
+		historyData.forEach((ele, index) => {
+			ctx.fillText(ele.AppraiseTime, (40 + index * 55) * ratio, 170 * ratio)
 		})
 		ctx.stroke()
 		// 绘制X轴虚线
@@ -367,7 +386,7 @@ methods = {
 		ctx.stroke()
 		// Y轴文字
 		ctx.setFontSize(12)
-		ctx.fillText('单位：元', 0, 13 * ratio)
+		ctx.fillText('单位：元/㎡', 0, 13 * ratio)
 		for (let i = 0; i <= 4; i++) {
 			ctx.fillText(`${parseInt(maxPrice - sectionPrice * i)}`, 0, (34 + 30 * i) * ratio)
 		}
@@ -376,8 +395,8 @@ methods = {
 			// 计算价格坐标
 		const pxPrice = sectionPrice / 30   // 1px的价格
 		const coordArry = []
-		this.historyData.forEach((ele, index) => {
-			coordArry.push({x: (50 + index * 55) * ratio, y: ((maxPrice - ele.price) / pxPrice + 30) * ratio, price: ele.price})
+		historyData.forEach((ele, index) => {
+			coordArry.push({x: (50 + index * 55) * ratio, y: ((maxPrice - ele.Price) / pxPrice + 30) * ratio, price: ele.Price})
 		})
 		this.coordArry = coordArry
 		console.log('坐标', coordArry)
@@ -400,10 +419,24 @@ methods = {
 		const lastCoord = coordArry[coordArry.length - 1]
 		ctx2.arc(lastCoord.x, lastCoord.y, 4, 0, 2 * Math.PI)
 		ctx2.setFillStyle('#6db6ff')
-		ctx2.fillText(lastCoord.price, lastCoord.x - 20, lastCoord.y - 5)
+		ctx2.fillText(lastCoord.price, lastCoord.x - 15, lastCoord.y - 8)
 		ctx2.fill()
 		ctx2.draw()
 		this.$apply()
+	},
+	toSubscirbe: async () => {
+		await wepy.request({
+			url: api['isSubscribe'],
+			data: {
+				uid: wepy.$instance.globalData.myUserInfo.uid,
+				id: this.currentData.id
+			}
+		})
+		wepy.navigateTo({url: 'loginSuccess'})
+		setTimeout(() => {
+			this.currentData.subscribe = '1'
+			this.$apply()
+		}, 1000)
 	}
 }
 

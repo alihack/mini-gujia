@@ -32,6 +32,7 @@ module.exports = {
 		'comma-dangle': 0,
 		'eqeqeq': 0,
 		'no-useless-return': 0,
-		'no-unreachable': 0
+		'no-unreachable': 0,
+		"no-unused-expressions": "off"
 	}
 }

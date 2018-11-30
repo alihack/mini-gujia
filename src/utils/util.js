@@ -102,7 +102,7 @@ const getLocation = () => {
 }
 
 const dataController = (ele) => {
-	return new Promise(resolve => {
+	return new Promise(async resolve => {
 		console.log('调用dataController方法')
 		// 2-1-2  => 2室1厅2卫
 		const typeArr = ele.house_type.split('-')
@@ -111,6 +111,8 @@ const dataController = (ele) => {
 		ele.total_price = parseFloat(ele.total_price)
 		ele.unit_price = parseFloat(ele.unit_price)
 		ele.acreage = parseFloat(ele.acreage)
+		// 计算估值范围
+		ele.price_range = (ele.total_price * 0.96).toFixed(2) + '~' + (ele.total_price * 1.05).toFixed(2) + '万'
 		// 房源分析
 		let sourceAnalyze = [{}, {}, {}]
 			// 面积
@@ -180,6 +182,10 @@ const dataController = (ele) => {
 				break
 		}
 		ele.sourceAnalyze = sourceAnalyze
+		// 环比
+		if (ele.ratio) {
+			ele.ratioIconSrc = ele.ratio.indexOf('跌') != -1 ? '../images/decline.png' : '../images/rise.png'
+		}
 		resolve(ele)
 	})
 }

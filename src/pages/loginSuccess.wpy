@@ -26,7 +26,7 @@
 <template>
 	<view class="container">
 		<view class="panel">
-			<view class="title">登录成功</view>
+			<view class="title">订阅成功</view>
 			<view class="tips">请选择估价的目的，获取更精准的服务</view>
 			<view class="button" @tap="addUserIntention('2')">算算我家值多少钱</view>
 			<view class="button" @tap="addUserIntention('1')">单纯对该楼盘感兴趣</view>
@@ -37,6 +37,7 @@
 <script>
 import wepy from 'wepy'
 import api from '../utils/api'
+import {getUserInfo} from '../utils/util'
 export default class Index extends wepy.page {
 config = {
 	navigationBarTitleText: '房牛估价',
@@ -46,22 +47,28 @@ components = {
 }
 
 data = {
-	houseTime: '1998'
+	id: ''
 }
 
 computed = {
 }
 onLoad() {
+	// 获取前一页面数据
+	const pages = getCurrentPages()
+	const prevPage = pages[pages.length - 2]
+	this.id = prevPage.data.currentData.id
 }
 methods = {
-	async addUserIntention(type) {
+	async addUserIntention(kind) {
 		await wepy.request({
 			url: api['addUserIntention'],
 			data: {
-				uid: wepy.$instance.globalData.myUserInfo.uid,
-				intention: type
+				id: this.id,
+				intention: kind
 			}
 		})
+		// 更新用户信息
+		await getUserInfo()
 		wepy.navigateBack()
 	}
 }

@@ -51,13 +51,13 @@
 			}
 			.icon1 {
 				.icon;
-				border-top-left-radius: 20rpx;
-				border-bottom-left-radius: 20rpx;
+				border-top-left-radius: 60rpx;
+				border-bottom-left-radius: 60rpx;
 			}
 			.icon2 {
 				.icon;
-				border-top-right-radius: 20rpx;
-				border-bottom-right-radius: 20rpx;
+				border-top-right-radius: 60rpx;
+				border-bottom-right-radius: 60rpx;
 			}
 			.box1 {
 				width: 214rpx;
@@ -161,6 +161,9 @@ export default class cityList extends wepy.page {
 			}
 			this.searchText = value
 			this.isSearched = true
+			wx.showLoading({
+				title: '搜索中',
+			})
 			wepy.request({
 				url: api['getCommunityList'],
 				data: {
@@ -170,6 +173,7 @@ export default class cityList extends wepy.page {
 			}).then(({data}) => {
 				console.log(data)
 				this.communityList = data
+				wx.hideLoading()
 				this.$apply()
 			})
 		},

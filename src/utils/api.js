@@ -16,6 +16,7 @@ const apis = [
 	'addUserIntention',
 	'getUserMobile',
 	'getTrend',
+	'isSubscribe'
 ]
 
 const env = 'test' // dev: 本地测试服务器， prod：线上服务器, test：测试服务器

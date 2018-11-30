@@ -33,6 +33,9 @@
 			font-size: 16px;
 			box-sizing: border-box;
 			border-bottom: 1px solid #e5e5e5;
+			input {
+				width: 450rpx;
+			}
 			.remain {
 				color:#cccccc;
 				font-size: 14px;
@@ -43,7 +46,7 @@
 				height: 50rpx;
 				line-height: 50rpx;
 				font-size: 14px;
-				border-radius: 20rpx;
+				border-radius: 50rpx;
 				background: #5dacff;
 				color:#fff;
 				text-align: center;
@@ -76,6 +79,7 @@
 <script>
 import wepy from 'wepy'
 import api from '../utils/api'
+import {getUserInfo} from '../utils/util'
 export default class Index extends wepy.page {
 config = {
 	navigationBarTitleText: '房牛估价',
@@ -88,12 +92,14 @@ data = {
 	phoneNum: '',
 	codeNum: '',
 	isGetingCode: false,
-	remainTime: 60
+	remainTime: 60,
+	type: ''
 }
 
 computed = {
 }
-onLoad() {
+onLoad({type}) {
+	this.type = type
 }
 methods = {
 	close() {
@@ -162,7 +168,15 @@ methods = {
 			this.$apply()
 			return
 		}
-		wepy.redirectTo({url: 'loginSuccess'})
+		if (this.type == 'mark') {
+			wx.setStorageSync('isSubscribe', true)
+			wepy.redirectTo({url: 'loginSuccess'})
+		} else {
+			wx.showToast({title: '登录成功'})
+			// 更新用户信息
+			await getUserInfo()
+			wepy.navigateBack()
+		}
 	},
 	onPhoneChange ({detail: {value}}) {
 		this.phoneNum = value

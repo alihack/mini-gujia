@@ -46,7 +46,7 @@
 	.box {
 		margin-top:20rpx;
 		width: 690rpx;
-		height: 225rpx;
+		min-height: 225rpx;
 		background: #fff;
 		box-sizing: border-box;
 		border-radius: 10rpx;
@@ -56,11 +56,13 @@
 			.building {
 				font-size:18px;
 				font-weight: bold;
+				width: 390rpx;
 			}
 			.room {
 				margin:10rpx 0 0 10rpx;
 				font-size: 13px;
 				color:#888888;
+				width: 350rpx;
 			}
 		}
 		&-main {
@@ -116,10 +118,13 @@
 				.red {
 					color: red
 				}
+				&-title {
+					width: 75rpx;
+				}
 				&-content {
 					margin-left:30rpx;
 					input {
-						width: 500rpx;
+						width: 490rpx;
 					}
 				}
 			}

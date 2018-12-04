@@ -112,7 +112,7 @@ const dataController = (ele) => {
 		ele.unit_price = parseFloat(ele.unit_price)
 		ele.acreage = parseFloat(ele.acreage)
 		// 计算估值范围
-		ele.price_range = (ele.total_price * 0.96).toFixed(2) + '~' + (ele.total_price * 1.05).toFixed(2) + '万'
+		ele.price_range = parseInt(ele.total_price * 0.96) + '~' + parseInt(ele.total_price * 1.05) + '万'
 		// 房源分析
 		let sourceAnalyze = [{}, {}, {}]
 			// 面积

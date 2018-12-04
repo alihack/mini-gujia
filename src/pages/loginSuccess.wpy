@@ -9,7 +9,7 @@
 		flex-direction: column;
 		align-items: center;
 		.title {
-			font-size: 21px;
+			font-size: 18px;
 			margin-top:80rpx;
 		}
 		.tips {
@@ -26,8 +26,7 @@
 <template>
 	<view class="container">
 		<view class="panel">
-			<view class="title">订阅成功</view>
-			<view class="tips">请选择估价的目的，获取更精准的服务</view>
+			<view class="title">请选择估价的目的，获取更精准的服务</view>
 			<view class="button" @tap="addUserIntention('2')">算算我家值多少钱</view>
 			<view class="button" @tap="addUserIntention('1')">单纯对该楼盘感兴趣</view>
 		</view>
@@ -69,6 +68,7 @@ methods = {
 		})
 		// 更新用户信息
 		await getUserInfo()
+		wx.setStorageSync('isSubscribe', true)
 		wepy.navigateBack()
 	}
 }

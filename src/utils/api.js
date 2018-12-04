@@ -1,5 +1,5 @@
 const roots = {
-	prod: 'https://love.yylhealth.com/',
+	prod: 'https://api.hd.xiaoyu.com/wxapp/fngj/index/',
 	dev: 'http://192.168.1.46/index.php/wxapp/fngj/index/',
 	test: 'https://hd-api.dev.xiaoyu.com/index.php/wxapp/fngj/index/'
 }

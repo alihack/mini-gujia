@@ -30,12 +30,12 @@
 		}
 		.price {
 			.number {
-				font-size: 59px;
+				font-size: 108rpx;
 			}
 		}
 		.supply {
 			text-align: center;
-			font-size: 13px;
+			font-size: 26rpx;
 			margin-bottom: 30rpx;
 			image {
 				width:38rpx;
@@ -47,15 +47,18 @@
 		}
 		.detail {
 			display: flex;
-			justify-content: space-between;
-			padding:0 15rpx 0 15rpx;
-			width: 660rpx;
-			margin:40rpx 0;
+			width: 690rpx;
+			margin:30rpx 0;
 			color:#d5e5ff;
+			text-align: center;
+			&-left, &-right {
+				width: 230rpx;
+			}
 			&-center {
 				border-left:1px solid #fff;
 				border-right:1px solid #fff;
-				padding:0 30rpx 0 30rpx;
+				width: 230rpx;
+				box-sizing: border-box;
 			}
 		}
 		.button {
@@ -83,7 +86,7 @@
 			}
 		}
 		.title {
-			font-size: 18px;
+			font-size: 36rpx;
 		}
 		.canvas1 {
 			width: 100%;
@@ -109,7 +112,7 @@
 			margin-top:30rpx;
 		}
 		.title {
-			font-size: 18px;
+			font-size: 36rpx;
 			margin-bottom: 30rpx;
 			width: 100%;
 		}
@@ -122,14 +125,14 @@
 			display: flex;
 			align-items: center;
 			&-left {
-				width: 136rpx;
+				width: 158rpx;
 				padding-right: 25rpx;
 				border-right: 2rpx solid #eaeaea;
 			}
 			&-right {
 				width: 460rpx;
 				padding-left: 25rpx;
-				font-size: 12px;
+				font-size: 24rpx;
 				color:#666666;
 			}
 		}
@@ -140,7 +143,7 @@
 		justify-content: space-between;
 		margin-top:30rpx;
 		margin-bottom: 50rpx;
-		font-size: 13px;
+		font-size: 26rpx;
 		color:#cecece;
 		.border {
 			width: 240rpx;
@@ -154,14 +157,15 @@
 	<view class="container">
 		<view class="header">
 			<view class="room">
-				<view class="text">{{currentData.community_name}}-{{currentData.house_type}}-{{currentData.acreage}}m<text class="sup-text">2</text></view>
+				<view class="text">{{currentData.community_name}} -{{currentData.house_type}}-{{currentData.acreage}}m<text class="sup-text">2</text></view>
 				<button class="share" open-type="share" plain><image src="../images/share.png"></image></button>
 			</view>
 			<view class="price">
 				<text class="number">{{currentData.total_price}}</text>
 				<text class="unit">万</text>
 			</view>
-			<view class="supply" @tap="goSupply"><text>点击补充楼房信息 估值更精准</text><image src="../images/write.png"></image></view>
+			<view class="supply" @tap="goSupply" wx:if="{{!currentData.jsondata}}"><text>点击补充楼房信息 估值更精准</text><image src="../images/write.png"></image></view>
+			<view class="supply" wx:else><text>信息已补充</text><image src="../images/write.png"></image></view>
 			<view class="detail">
 				<view class="detail-left">
 					<view class="title">房屋评估单价</view>
@@ -246,17 +250,27 @@ computed = {
 onPullDownRefresh () {
     wx.stopPullDownRefresh()
 }
+onShareAppMessage(res) {
+    return {
+      title: '我的房子值多少钱',
+      path: '/pages/index'
+    }
+  }
 async onLoad() {
 	// 获取前一页面数据
 	const pages = getCurrentPages()
 	const prevPage = pages[pages.length - 2]
 	this.currentData = prevPage.data.currentData
+	// 小区名字过长省略
+	if (this.currentData.community_name.length > 9) this.currentData.community_name = this.currentData.community_name.slice(0, 9) + '...'
 	await this.methods.getTrend()
 }
 onShow() {
 	if (wepy.$instance.globalData.myUserInfo.mobile) this.hasPhone = true
 	if (wx.getStorageSync('isSubscribe')) this.currentData.subscribe = '1'
 	wx.removeStorageSync('isSubscribe')
+	if (wx.getStorageSync('isSupply')) this.currentData.jsondata = '1'
+	wx.removeStorageSync('isSupply')
 	this.$apply()
 }
 methods = {
@@ -322,7 +336,6 @@ methods = {
 		this.$apply()
 	},
 	touchCanvas({changedTouches}) {
-		console.log(changedTouches[0])
 		const coord = changedTouches[0]
 		const ctx = wx.createCanvasContext('myCanvas2')
 		const ratio = wx.getSystemInfoSync().windowWidth / 375
@@ -336,8 +349,8 @@ methods = {
 			}
 		})
 		if (!result.x) return
-		console.log(result)
 		ctx.setFillStyle('#6db6ff')
+		ctx.setFontSize(12)
 		ctx.arc(result.x, result.y, 4, 0, 2 * Math.PI)
 		if (isFirst) {
 			ctx.fillText(`${result.price}`, result.x + 5, result.y - 5)
@@ -367,6 +380,7 @@ methods = {
 		ctx.save()
 		// 绘制X轴实线及月份
 		ctx.beginPath()
+		ctx.setFontSize(12)
 		ctx.setFillStyle('#cccccc')
 		ctx.setStrokeStyle('#cccccc')
 		ctx.moveTo(38 * ratio, 150 * ratio)
@@ -420,6 +434,7 @@ methods = {
 		ctx2.arc(lastCoord.x, lastCoord.y, 4, 0, 2 * Math.PI)
 		ctx2.setFillStyle('#6db6ff')
 		ctx2.fillText(lastCoord.price, lastCoord.x - 15, lastCoord.y - 8)
+		ctx.setFontSize(12)
 		ctx2.fill()
 		ctx2.draw()
 		this.$apply()
@@ -433,10 +448,6 @@ methods = {
 			}
 		})
 		wepy.navigateTo({url: 'loginSuccess'})
-		setTimeout(() => {
-			this.currentData.subscribe = '1'
-			this.$apply()
-		}, 1000)
 	}
 }
 

@@ -199,7 +199,7 @@
 		<view class="location" @tap="chooseCity">
 			<image class="address" src="../images/address.png"/>
 			<view>厦门</view>
-			<image class="triangle" src="../images/triangle.png"/>
+			<!-- <image class="triangle" src="../images/triangle.png"/> -->
 		</view>
 		<view class="title">算算房子值多少钱</view>
 		<view class="animation-2s">
@@ -215,7 +215,7 @@
 					<view class="cell-head">
 							<view class="cell-head-title {{titleBeRed[1] ? 'red' : ''}}">面积</view>
 							<view class="cell-head-content">
-								<input placeholder="请输入"  bindblur="onAreaBlur" value="{{areaValue}}" type="number"/>
+								<input placeholder="请输入"  bindblur="onAreaBlur" value="{{areaValue}}" type="digit"/>
 							</view>
 						</view>
 					<view><text>m</text><text class="sup-text">2</text></test></view>
@@ -242,7 +242,7 @@
 					<view class="cell">
 						<view class="cell-head">
 							<view class="cell-head-title {{titleBeRed[4] ? 'red' : ''}}">楼层</view>
-							<view class="cell-head-content">{{storeyValue}}</view>
+							<view class="cell-head-content" wx:if="{{storeyValue}}">{{storeyValue}}/{{allStorey}}</view>
 						</view>
 						<image class="cell-foot" src="../images/next.png"/>
 					</view>
@@ -346,6 +346,7 @@ async refresh () {
 }
 async onShow() {
 	this.refresh()
+	wx.showShareMenu()
 	this.currentCommunity = wx.getStorageSync('currentCommunity')
 	if (this.currentCommunity) this.titleBeRed[0] = 0
 	wx.removeStorageSync('currentCommunity')
@@ -465,7 +466,11 @@ methods = {
 			return
 		}
 		this.titleBeRed[1] = 0
-		this.areaValue = value
+		if (value.indexOf('.') != -1) {
+			this.areaValue = value.slice(0, value.indexOf('.') + 3)
+		} else {
+			this.areaValue = value
+		}
 	},
 	goSearch() {
 		wepy.navigateTo({url: 'searchCommunity'})

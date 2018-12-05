@@ -10,7 +10,7 @@
 		color:#fff;
 		.room {
 			margin-top:30rpx;
-			width: 92%;
+			width: 720rpx;
 			height: 60rpx;
 			line-height: 60rpx;
 			text-align: center;
@@ -228,7 +228,7 @@
 <script>
 import wepy from 'wepy'
 import api from '../utils/api'
-import {getUserInfo} from '../utils/util'
+import {getUserInfo, getUserId} from '../utils/util'
 export default class Index extends wepy.page {
 config = {
 	navigationBarTitleText: '房牛估价',
@@ -304,8 +304,24 @@ methods = {
 	goSupply () {
 		wepy.navigateTo({url: `supplyInfo?id=${this.currentData.id}`})
 	},
+	checkSession () {
+		return new Promise(resolve => {
+			wx.checkSession({
+				success: async () => {
+					console.log('session_key未过期，并且在本生命周期一直有效')
+					resolve()
+				},
+				fail: async () => {
+					console.log('session_key 已经失效，需要重新执行登录流程')
+					await getUserId(true) // 强制获取
+					resolve()
+				}
+			})
+		})
+	},
 	async getPhoneNumber (type, {detail}) {
 		console.log(detail)
+		await this.methods.checkSession()
 		if (!detail.iv) {
 			console.log('用户取消授权')
 			wx.navigateTo({url: `loginByPhone?type=${type}`})
@@ -332,6 +348,7 @@ methods = {
 				title: '请求失败',
 				icon: 'none'
 			})
+			wx.navigateTo({url: `loginByPhone?type=${type}`})
 		}
 		this.$apply()
 	},
@@ -355,7 +372,7 @@ methods = {
 		if (isFirst) {
 			ctx.fillText(`${result.price}`, result.x + 5, result.y - 5)
 		} else {
-			ctx.fillText(`${result.price}`, result.x - 15, result.y - 8)
+			ctx.fillText(`${result.price}`, result.x - 18, result.y - 8)
 		}
 		ctx.fill()
 		ctx.draw()
@@ -433,20 +450,13 @@ methods = {
 		const lastCoord = coordArry[coordArry.length - 1]
 		ctx2.arc(lastCoord.x, lastCoord.y, 4, 0, 2 * Math.PI)
 		ctx2.setFillStyle('#6db6ff')
-		ctx2.fillText(lastCoord.price, lastCoord.x - 15, lastCoord.y - 8)
-		ctx.setFontSize(12)
+		ctx2.setFontSize(12)
+		ctx2.fillText(lastCoord.price, lastCoord.x - 18, lastCoord.y - 8)
 		ctx2.fill()
 		ctx2.draw()
 		this.$apply()
 	},
 	toSubscirbe: async () => {
-		await wepy.request({
-			url: api['isSubscribe'],
-			data: {
-				uid: wepy.$instance.globalData.myUserInfo.uid,
-				id: this.currentData.id
-			}
-		})
 		wepy.navigateTo({url: 'loginSuccess'})
 	}
 }

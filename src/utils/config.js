@@ -6,7 +6,7 @@ const houseTypeArry = [
 ]
 
 // 朝向
-const orientationArry = ['东', '南', '西', '北', '东南', '西南', '东北', '西北']
+const orientationArry = ['东', '南', '西', '北', '东南', '西南', '东北', '西北', '南北', '东西']
 
 // 建筑类型
 const buildingTypeArry = ['板楼', '塔楼', '板塔结合', '平房']

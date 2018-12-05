@@ -3,12 +3,12 @@ import wepy from 'wepy'
 import api from './api'
 // import QQMapWX from './qqmap-wx-jssdk.js'
 
-const getUserId = () => {
+const getUserId = (isForced) => {
 	return new Promise(async resolve => {
 		console.log('调用getUserId方法')
 		const uid = wx.getStorageSync('uid')
 		// 有uid则不重新获取
-		if (uid) {
+		if (uid && !isForced) {
 			console.log('有uid不重新获取')
 			resolve(uid)
 			return
@@ -135,7 +135,7 @@ const dataController = (ele) => {
 		}
 		const storeyNum = parseFloat(ele.storey.slice(0, ele.storey.indexOf('层')))
 		sourceAnalyze[1].txt1 = '楼层'
-		sourceAnalyze[1].txt2 = ele.storey.replace(/共/, '/')
+		sourceAnalyze[1].txt2 = ele.storey
 		switch (true) {
 			case 1 <= storeyNum && storeyNum <= 4:
 				sourceAnalyze[1].content = '低楼层出行更方便，适合有老人、儿童的家庭。但通风、采光较差，噪音较大且易受潮。'
@@ -179,6 +179,12 @@ const dataController = (ele) => {
 				break
 			case '北':
 				sourceAnalyze[2].content = '夏季凉爽，在采光上具有劣势，且冬季阴冷。'
+				break
+			case '南北':
+				sourceAnalyze[2].content = '冬暖夏凉，采光充足，通风良好，十分宜居。'
+				break
+			case '东西':
+				sourceAnalyze[2].content = '早晚阳光较为充足，但各方面均不如南北朝向的房子。'
 				break
 		}
 		ele.sourceAnalyze = sourceAnalyze

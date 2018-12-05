@@ -68,8 +68,18 @@ methods = {
 		})
 		// 更新用户信息
 		await getUserInfo()
+		await wepy.request({
+			url: api['isSubscribe'],
+			data: {
+				uid: wepy.$instance.globalData.myUserInfo.uid,
+				id: this.id
+			}
+		})
+		wx.showToast({title: '订阅成功'})
 		wx.setStorageSync('isSubscribe', true)
-		wepy.navigateBack()
+		setTimeout(() => {
+			wepy.navigateBack()
+		}, 1000)
 	}
 }
 

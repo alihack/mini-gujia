@@ -16,10 +16,11 @@ const apis = [
 	'addUserIntention',
 	'getUserMobile',
 	'getTrend',
-	'isSubscribe'
+	'isSubscribe',
+	'getSearchHistory'
 ]
 
-const env = 'prod' // dev: 本地测试服务器， prod：线上服务器, test：测试服务器
+const env = 'test' // dev: 本地测试服务器， prod：线上服务器, test：测试服务器
 const root = roots[env]
 const api = {}
 apis.forEach(ele => {

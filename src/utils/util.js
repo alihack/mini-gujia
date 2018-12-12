@@ -1,7 +1,7 @@
 /* eslint-disable yoda */
 import wepy from 'wepy'
 import api from './api'
-// import QQMapWX from './qqmap-wx-jssdk.js'
+import QQMapWX from './qqmap-wx-jssdk.js'
 
 const getUserId = (isForced) => {
 	return new Promise(async resolve => {
@@ -70,32 +70,32 @@ const getLocation = () => {
 			return
 		}
 		// 实例化API核心类
-		// const qqmapsdk = new QQMapWX({
-		// 	key: 'KUBBZ-HYIKF-II2J3-NYSEA-IY3ZQ-KTBP3'
-		// })
-		// wx.getLocation({
-		// 	type: 'gcj02',
-		// 	success: res => {
-		// 		let locationInfo = {}
-		// 		qqmapsdk.reverseGeocoder({
-		// 			location: {
-		// 				latitude: res.latitude,
-		// 				longitude: res.longitude
-		// 			},
-		// 			success: ({result: {ad_info}}) => {
-		// 				locationInfo.name = ad_info.city.slice(0, ad_info.city.length - 1)
-		// 				locationInfo.code = ad_info.city_code.slice(3)
-		// 			},
-		// 			fail: function(res) {
-		// 				console.log(res)
-		// 			},
-		// 			complete: function(res) {
-		// 				wx.setStorageSync('locationInfo', locationInfo)
-		// 				resolve()
-		// 			}
-		// 		})
-		// 	}
-		// })
+		const qqmapsdk = new QQMapWX({
+			key: 'KUBBZ-HYIKF-II2J3-NYSEA-IY3ZQ-KTBP3'
+		})
+		wx.getLocation({
+			type: 'gcj02',
+			success: res => {
+				let locationInfo = {}
+				qqmapsdk.reverseGeocoder({
+					location: {
+						latitude: res.latitude,
+						longitude: res.longitude
+					},
+					success: ({result: {ad_info}}) => {
+						locationInfo.name = ad_info.city.slice(0, ad_info.city.length - 1)
+						locationInfo.code = ad_info.city_code.slice(3)
+					},
+					fail: function(res) {
+						console.log(res)
+					},
+					complete: function(res) {
+						wx.setStorageSync('locationInfo', locationInfo)
+						resolve()
+					}
+				})
+			}
+		})
 		wx.setStorageSync('locationInfo', {name: '厦门', code: '350200'})
 		resolve()
 	})

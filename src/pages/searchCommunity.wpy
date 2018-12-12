@@ -14,7 +14,9 @@
 			font-size: 16px;
 			.title {
 				font-size: 13px;
-				color:#888888
+				color:#888888;
+				width: 100%;
+				padding-left: 40rpx;
 			}
 			.address {
 				width: 30rpx;
@@ -82,13 +84,6 @@
 				margin-bottom: 25rpx;
 				padding-left: 10rpx;
 			}
-			.city-item {
-				margin-bottom: 20rpx;
-			}
-			.city-box {
-				display: flex;
-				flex-wrap:wrap;
-			}
 		}
 	}
 }
@@ -111,6 +106,14 @@
 			<view class="icon2">
 				<image wx:if="{{isSearched}}" src="../images/clear.png" @tap="clearSearch"></image>
 			</view>
+		</view>
+	</view>
+	<view class="item" wx:if="{{historyList.length != 0 && !isSearched}}">
+		<view class="item-head">
+			<view class="title">历史记录</view>
+		</view>
+		<view class="item-content">
+			<view class="box" wx:for="{{historyList}}" wx:key="index" @tap="setCommunityName({{item}})">{{item.Name}}</view>
 		</view>
 	</view>
 	<view class="item" wx:if="{{communityList.length != 0}}">
@@ -136,11 +139,26 @@ export default class cityList extends wepy.page {
 		isSearched: false,
 		adCode: '',
 		communityList: [],
+		historyList: [],
 	}
-	onLoad() {
-		this.adCode = wx.getStorageSync('locationInfo').code
+	async onLoad() {
+		// this.adCode = wx.getStorageSync('locationInfo').code
+		await this.methods.getSearchHistory()
 	}
 	methods = {
+		getSearchHistory: () => {
+			return new Promise(async resolve => {
+				const {data} = await wepy.request({
+					url: api['getSearchHistory'],
+					data: {
+						uid: wepy.$instance.globalData.myUserInfo.uid,
+					}
+				})
+				this.historyList = data
+				this.$apply()
+				resolve()
+			})
+		},
 		onInputChange: ({detail: {value}}) => {
 			if (!value) {
 				this.isSearched = false
@@ -168,6 +186,7 @@ export default class cityList extends wepy.page {
 		clearSearch() {
 			this.isSearched = false
 			this.searchText = ''
+			this.communityList = []
 		},
 		setCommunityName(item) {
 			console.log(item)

@@ -406,7 +406,7 @@ methods = {
 		}
 		// 提交表单
 		const form = {}
-		form.city_id = this.currentCommunity.AreaCode
+		form.city_id = '350203'
 		form.ProjectId = this.currentCommunity.Id
 		form.community_name = this.currentCommunity.Name
 		form.acreage = this.areaValue
